@@ -37,10 +37,11 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import gr.panoramapolihnitou.app.di.AppGraph
 import gr.panoramapolihnitou.app.ui.UiState
+import gr.panoramapolihnitou.app.ui.ads.BannerAd
 import gr.panoramapolihnitou.app.ui.components.ArticleCard
 import gr.panoramapolihnitou.app.ui.components.EmptyView
 import gr.panoramapolihnitou.app.ui.components.ErrorView
-import gr.panoramapolihnitou.app.ui.components.FeaturedArticleCard
+import gr.panoramapolihnitou.app.ui.components.FeaturedSlider
 import gr.panoramapolihnitou.app.ui.components.LoadingView
 import gr.panoramapolihnitou.app.ui.components.PanoramaTopBar
 import gr.panoramapolihnitou.app.ui.screens.detail.ArticleDetailScreen
@@ -88,28 +89,28 @@ data class ArticleListScreen(
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            top = 12.dp,
-                            bottom = 16.dp,
-                            start = 16.dp,
-                            end = 16.dp
-                        ),
+                        contentPadding = PaddingValues(bottom = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        // First article shown as a large featured hero.
-                        val featured = s.data.first()
-                        item(key = "featured-${featured.id}") {
-                            FeaturedArticleCard(
-                                article = featured,
-                                onClick = { navigator.push(ArticleDetailScreen(featured.id)) }
-                            )
+                        // Top 3 latest articles of the category as a slider.
+                        val top = s.data.take(3)
+                        if (top.isNotEmpty()) {
+                            item(key = "cat-slider") {
+                                FeaturedSlider(
+                                    articles = top,
+                                    onArticleClick = { navigator.push(ArticleDetailScreen(it.id)) }
+                                )
+                            }
+                            item(key = "cat-banner") { BannerAd(Modifier.padding(vertical = 4.dp)) }
                         }
-                        items(s.data.drop(1), key = { it.id }) { article ->
+                        // The rest as standard cards.
+                        items(s.data.drop(3), key = { it.id }) { article ->
                             ArticleCard(
                                 article = article,
                                 isBookmarked = article.id in bookmarkedIds,
                                 onClick = { navigator.push(ArticleDetailScreen(article.id)) },
-                                onToggleBookmark = { model.toggleBookmark(article) }
+                                onToggleBookmark = { model.toggleBookmark(article) },
+                                modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
                         if (loadingMore) {

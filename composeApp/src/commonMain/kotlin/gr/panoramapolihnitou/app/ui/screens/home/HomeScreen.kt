@@ -17,6 +17,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import gr.panoramapolihnitou.app.di.AppGraph
 import gr.panoramapolihnitou.app.ui.UiState
+import gr.panoramapolihnitou.app.ui.ads.BannerAd
 import gr.panoramapolihnitou.app.ui.components.ArticleCard
 import gr.panoramapolihnitou.app.ui.components.ErrorView
 import gr.panoramapolihnitou.app.ui.components.FeaturedSlider
@@ -72,6 +73,9 @@ class HomeScreen : Screen {
                             )
                         }
                     }
+                    // Banner ad between sections.
+                    item { BannerAd(Modifier.padding(vertical = 8.dp)) }
+
                     // ΤΕΛΕΥΤΑΙΑ ΝΕΑ — compact horizontal rows with dividers.
                     item { SectionHeader("Τελευταία Νέα") }
                     items(s.data.latest, key = { it.id }) { article ->
@@ -82,6 +86,9 @@ class HomeScreen : Screen {
                             onToggleBookmark = { model.toggleBookmark(article) }
                         )
                     }
+
+                    // Banner ad at the end of the feed.
+                    item { BannerAd(Modifier.padding(vertical = 12.dp)) }
                 }
             }
         }

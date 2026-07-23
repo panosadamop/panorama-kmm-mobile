@@ -262,6 +262,44 @@ or `xcrun altool`/`notarytool` for uploads.
 
 ---
 
+## 4.3 Banner ads (AdMob)
+
+The app ships with **Google AdMob banner** support, using Google's public **test**
+ad units by default (so you see test banners immediately, with no risk of policy
+violations).
+
+**Where banners appear:** home feed (between sections + at the end), category lists
+(under the slider), and the bottom of each article. Add more anywhere with one line:
+
+```kotlin
+import gr.panoramapolihnitou.app.ui.ads.BannerAd
+// inside any Composable / LazyColumn item:
+BannerAd(Modifier.padding(vertical = 8.dp))
+```
+
+**Turn ads on/off at runtime:** `AdConfig.adsEnabled = false` (in
+`ui/ads/BannerAd.kt`) hides every slot.
+
+**Go live with your own ads (before publishing):**
+1. Create an AdMob account, an app, and a **banner ad unit**.
+2. **Android:** replace the two placeholders —
+   - App ID → `composeApp/src/androidMain/AndroidManifest.xml`
+     (`com.google.android.gms.ads.APPLICATION_ID`, the `ca-app-pub-…~…` value).
+   - Ad-unit ID → `AdConfig.bannerAdUnitId` in `ui/ads/BannerAd.kt`
+     (the `ca-app-pub-…/…` value).
+3. Never ship test IDs to production, and don't click your own live ads.
+
+**iOS:** banner rendering is currently a no-op stub (`BannerAd.ios.kt`) so the shared
+code compiles. To enable on iOS (on a Mac):
+1. Add the **Google-Mobile-Ads-SDK** to `iosApp` (Swift Package Manager or CocoaPods).
+2. Add `GADApplicationIdentifier` (your AdMob app id) + `SKAdNetworkItems` to
+   `iosApp/iosApp/Info.plist`, and call `GADMobileAds.sharedInstance().start(...)`
+   in `iOSApp.swift`.
+3. Replace the stub body with a `UIKitView` hosting a `GADBannerView`
+   (`adUnitID = adUnitId`, `rootViewController` = top view controller, `load(GADRequest())`).
+
+---
+
 ## 5. Troubleshooting
 
 | Symptom | Fix |
@@ -273,6 +311,7 @@ or `xcrun altool`/`notarytool` for uploads.
 | iOS: *"ComposeApp framework not found"* | Ensure the "Compile Kotlin Framework" build phase ran; on a Mac run `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode` once. |
 | Release build not signed | Create `keystore.properties` from the sample (§3.2). Without it, `assembleRelease` produces an **unsigned** APK. |
 | `adb` not found | Add `%LOCALAPPDATA%\Android\Sdk\platform-tools` to your PATH. |
+| Test banner not showing | Give it a few seconds on first load; ensure the device is online and the AdMob App ID meta-data is present in the manifest. Set `AdConfig.adsEnabled = false` to hide slots. |
 
 ---
 

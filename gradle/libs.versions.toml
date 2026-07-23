@@ -17,6 +17,7 @@ serialization = "1.7.3"
 coil = "3.0.4"
 voyager = "1.1.0-beta03"
 multiplatformSettings = "1.2.0"
+playServicesAds = "23.6.0"
 
 [libraries]
 # Coroutines
@@ -49,6 +50,7 @@ multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-s
 
 # Android
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

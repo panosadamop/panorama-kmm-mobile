@@ -5,6 +5,21 @@ behind the key decisions. Newest entries at the top.
 
 ---
 
+## 2026-07-23 — Banner ads (AdMob)
+
+- Added a cross-platform, drop-in `BannerAd` slot (`ui/ads/BannerAd.kt`) with an
+  `AdConfig` (master `adsEnabled` switch + `bannerAdUnitId`).
+- **Android:** real AdMob banner via `AdView` (`play-services-ads`), SDK initialised
+  in `PanoramaApplication`, AdMob App ID + `AD_ID` permission in the manifest (Google
+  test ids by default).
+- **iOS:** documented no-op stub (`BannerAd.ios.kt`) until the Google Mobile Ads iOS
+  SDK is linked — keeps shared code compiling.
+- Placed banners in the home feed (between sections + end), category lists (under the
+  slider), and the bottom of each article. `BannerAd(Modifier…)` can be dropped anywhere.
+- RUNNING.md §4.3 documents going live with real ad ids and iOS wiring.
+
+---
+
 ## 2026-07-23 — Typography, tags, per-page menu, category hero, font scaling
 
 - **Ubuntu font** everywhere: bundled `Ubuntu-Light/Regular/Medium/Bold` TTFs (full
