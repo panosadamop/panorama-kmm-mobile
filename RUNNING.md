@@ -129,6 +129,23 @@ All networking config lives in one place:
 
 "Dev releases" = installable builds you hand to testers before going to the stores.
 
+### 3.0 Preview APK — one command (recommended for on-device testing)
+
+Produces a **signed, self-contained APK** you can copy to any phone and install by
+tapping it — **no Developer Options, no USB debugging, no `adb`** required (the phone
+just needs "Install unknown apps" allowed for the app you open the file with).
+
+```powershell
+.\build-preview-apk.bat
+```
+
+Output: **`dist\panorama-preview.apk`**. Transfer it to the phone (USB copy, Google
+Drive, email, etc.) and tap to install.
+
+It signs with `preview-keystore.jks` (config in `keystore.properties`). Both are created
+for you and kept out of git; they're for **internal test builds only** — use a real,
+securely-stored keystore for Play Store releases (§3.2).
+
 ### 3.1 Android — quick shareable APK (debug)
 
 The fastest option. No signing setup needed; anyone can sideload it.
