@@ -1,0 +1,29 @@
+# Gradle / build
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android
+local.properties
+*.apk
+*.aab
+*.keystore
+*.jks
+keystore.properties
+
+# IDE
+.idea/
+*.iml
+.kotlin/
+.fleet/
+
+# macOS / Xcode
+.DS_Store
+xcuserdata/
+*.xcworkspace/xcuserdata/
+iosApp/build/
+composeApp/build/xcode-frameworks/
+
+# Misc
+*.log

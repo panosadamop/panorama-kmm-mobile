@@ -1,0 +1,5 @@
+// Fill TEAM_ID with your Apple Developer Team ID before archiving for the App Store.
+// You can leave it empty for Simulator builds.
+TEAM_ID=
+BUNDLE_ID=gr.panoramapolihnitou.app
+APP_NAME=Panorama

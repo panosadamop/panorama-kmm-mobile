@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand palette mirrors src/theme/colors.js from the reference app. -->
+    <color name="brand_primary">#B22222</color>
+    <color name="brand_primary_dark">#8B0000</color>
+    <color name="window_background">#B22222</color>
+    <!-- Adaptive launcher icon background (matches app.json adaptiveIcon). -->
+    <color name="ic_launcher_background">#E32B2B</color>
+</resources>
