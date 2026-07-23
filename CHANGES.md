@@ -5,6 +5,19 @@ behind the key decisions. Newest entries at the top.
 
 ---
 
+## 2026-07-23 — Preview APK (signed, sideloadable)
+
+- Added `build-preview-apk.bat` — one command builds a **signed release APK** and
+  copies it to `dist\panorama-preview.apk`. Installs on any phone (Android 7.0+) by
+  tapping the file; no Developer Options / USB debugging / adb needed.
+- Generated `preview-keystore.jks` + `keystore.properties` (internal test signing;
+  git-ignored) so the release variant signs automatically.
+- Fixed the unix `gradlew` script (JVM-options quoting bug that broke CLI builds).
+- Built & verified: `gr.panoramapolihnitou.app` v1.0.0, ~17 MB, APK Signature v2 = valid.
+- RUNNING.md §3.0 documents the preview-APK workflow.
+
+---
+
 ## 2026-07-23 — Banner ads (AdMob)
 
 - Added a cross-platform, drop-in `BannerAd` slot (`ui/ads/BannerAd.kt`) with an
