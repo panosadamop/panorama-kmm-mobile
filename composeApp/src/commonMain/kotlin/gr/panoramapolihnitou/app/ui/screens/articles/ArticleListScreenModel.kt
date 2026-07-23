@@ -29,6 +29,9 @@ class ArticleListScreenModel(
     private val _endReached = MutableStateFlow(false)
     val endReached: StateFlow<Boolean> = _endReached.asStateFlow()
 
+    private val _refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean> = _refreshing.asStateFlow()
+
     val bookmarks: StateFlow<List<Article>> = bookmarkStore.bookmarks
 
     private var page = 1
@@ -57,6 +60,23 @@ class ArticleListScreenModel(
                     _state.value = UiState.Success(accumulated.toList())
                 }
                 .onFailure { _state.value = UiState.Error(it.toUserMessage()) }
+        }
+    }
+
+    /** Pull-to-refresh: reload page 1 without blanking the current list. */
+    fun pullRefresh() {
+        _refreshing.value = true
+        page = 1
+        _endReached.value = false
+        screenModelScope.launch {
+            runCatching { repository.getPosts(page, pageSize, categoryId, query) }
+                .onSuccess {
+                    accumulated.clear()
+                    accumulated += it
+                    _endReached.value = it.size < pageSize
+                    _state.value = UiState.Success(accumulated.toList())
+                }
+            _refreshing.value = false
         }
     }
 

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -62,6 +63,7 @@ data class ArticleListScreen(
         }
         val state by model.state.collectAsState()
         val loadingMore by model.loadingMore.collectAsState()
+        val refreshing by model.refreshing.collectAsState()
         val bookmarks by model.bookmarks.collectAsState()
         val bookmarkedIds = bookmarks.map { it.id }.toSet()
         val listState = rememberLazyListState()
@@ -85,7 +87,11 @@ data class ArticleListScreen(
                 is UiState.Error -> ErrorView(s.message, model::refresh)
                 is UiState.Success -> if (s.data.isEmpty()) {
                     EmptyView("Δεν βρέθηκαν άρθρα.")
-                } else {
+                } else PullToRefreshBox(
+                    isRefreshing = refreshing,
+                    onRefresh = model::pullRefresh,
+                    modifier = Modifier.fillMaxSize()
+                ) {
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
