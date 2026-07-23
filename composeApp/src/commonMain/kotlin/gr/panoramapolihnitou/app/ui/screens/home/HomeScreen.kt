@@ -1,6 +1,5 @@
 package gr.panoramapolihnitou.app.ui.screens.home
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +20,7 @@ import gr.panoramapolihnitou.app.ui.UiState
 import gr.panoramapolihnitou.app.ui.components.ArticleCard
 import gr.panoramapolihnitou.app.ui.components.ErrorView
 import gr.panoramapolihnitou.app.ui.components.FeaturedSlider
+import gr.panoramapolihnitou.app.ui.components.HorizontalArticleCard
 import gr.panoramapolihnitou.app.ui.components.LoadingView
 import gr.panoramapolihnitou.app.ui.components.PanoramaTopBar
 import gr.panoramapolihnitou.app.ui.components.SectionHeader
@@ -49,8 +49,7 @@ class HomeScreen : Screen {
                 is UiState.Error -> ErrorView(s.message, model::load)
                 is UiState.Success -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
                     if (s.data.featured.isNotEmpty()) {
                         item {
@@ -60,6 +59,7 @@ class HomeScreen : Screen {
                             )
                         }
                     }
+                    // ΣΗΜΑΝΤΙΚΑ — large image-on-top cards.
                     if (s.data.important.isNotEmpty()) {
                         item { SectionHeader("Σημαντικά") }
                         items(s.data.important, key = { "imp-${it.id}" }) { article ->
@@ -68,18 +68,18 @@ class HomeScreen : Screen {
                                 isBookmarked = article.id in bookmarkedIds,
                                 onClick = { navigator.push(ArticleDetailScreen(article.id)) },
                                 onToggleBookmark = { model.toggleBookmark(article) },
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                             )
                         }
                     }
+                    // ΤΕΛΕΥΤΑΙΑ ΝΕΑ — compact horizontal rows with dividers.
                     item { SectionHeader("Τελευταία Νέα") }
                     items(s.data.latest, key = { it.id }) { article ->
-                        ArticleCard(
+                        HorizontalArticleCard(
                             article = article,
                             isBookmarked = article.id in bookmarkedIds,
                             onClick = { navigator.push(ArticleDetailScreen(article.id)) },
-                            onToggleBookmark = { model.toggleBookmark(article) },
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            onToggleBookmark = { model.toggleBookmark(article) }
                         )
                     }
                 }

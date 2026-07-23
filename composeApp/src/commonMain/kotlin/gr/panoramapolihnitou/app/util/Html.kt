@@ -62,9 +62,27 @@ private fun StringBuilder.appendCodePointCompat(cp: Int): StringBuilder {
 
 private val tagRegex = Regex("<[^>]+>")
 
-/** Removes all tags, decodes entities, and collapses whitespace. */
+// Elements whose *content* must be dropped entirely (not just their tags):
+// image captions, embeds and scripts/styles that would otherwise leak as text.
+private val dropElementRegexes = listOf("figcaption", "script", "style", "noscript", "iframe").map { tag ->
+    Regex("<$tag\\b[^>]*>.*?</$tag>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
+}
+private val commentRegex = Regex("<!--.*?-->", RegexOption.DOT_MATCHES_ALL)
+
+/**
+ * Removes elements that should never be shown as text (figure captions, scripts,
+ * styles, iframes, comments) — with their content. Tags left behind are handled
+ * separately by the tag stripper.
+ */
+fun sanitizePostHtml(html: String): String {
+    var s = commentRegex.replace(html, "")
+    dropElementRegexes.forEach { s = it.replace(s, "") }
+    return s
+}
+
+/** Removes all tags (after dropping caption/script/etc.), decodes entities, collapses whitespace. */
 fun stripHtml(html: String): String =
-    decodeEntities(tagRegex.replace(html, " "))
+    decodeEntities(tagRegex.replace(sanitizePostHtml(html), " "))
         .replace(Regex("\\s+"), " ")
         .trim()
 
@@ -84,7 +102,10 @@ fun inlineHtmlToAnnotated(fragment: String): AnnotatedString = buildAnnotatedStr
 
     fun appendText(raw: String) {
         if (raw.isEmpty()) return
-        val text = decodeEntities(raw)
+        // Strip any tags that aren't the inline ones handled above (span, cite,
+        // figure, unknown embeds, …) so no literal "<...>" ever reaches the UI.
+        val text = decodeEntities(tagRegex.replace(raw, ""))
+        if (text.isEmpty()) return
         val style = SpanStyle(
             fontWeight = if (bold > 0) FontWeight.Bold else null,
             fontStyle = if (italic > 0) FontStyle.Italic else null
@@ -133,7 +154,10 @@ private val blockSplit = Regex("</?(p|div|h[1-6]|li|blockquote|ul|ol|figure|br\\
  * Splits post HTML into renderable blocks. Images are lifted out as standalone
  * [ContentBlock.Image] blocks; remaining text is grouped by block-level tags.
  */
-fun parseHtmlToBlocks(html: String): List<ContentBlock> {
+fun parseHtmlToBlocks(rawHtml: String): List<ContentBlock> {
+    // Drop figure captions, scripts, styles, iframes and comments (with content)
+    // before splitting into renderable blocks.
+    val html = sanitizePostHtml(rawHtml)
     val blocks = mutableListOf<ContentBlock>()
     var cursor = 0
     // Walk images in order, emitting text-between as paragraphs.
