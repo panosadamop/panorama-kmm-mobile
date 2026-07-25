@@ -88,7 +88,7 @@ class HomeScreen : Screen {
                         item {
                             FeaturedSlider(
                                 articles = s.data.featured,
-                                onArticleClick = { navigator.push(ArticleDetailScreen(it.id)) }
+                                onArticleClick = { navigator.push(ArticleDetailScreen(it)) }
                             )
                         }
                     }
@@ -99,7 +99,7 @@ class HomeScreen : Screen {
                             ArticleCard(
                                 article = article,
                                 isBookmarked = article.id in bookmarkedIds,
-                                onClick = { navigator.push(ArticleDetailScreen(article.id)) },
+                                onClick = { navigator.push(ArticleDetailScreen(article)) },
                                 onToggleBookmark = { model.toggleBookmark(article) },
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                             )
@@ -114,7 +114,7 @@ class HomeScreen : Screen {
                         HorizontalArticleCard(
                             article = article,
                             isBookmarked = article.id in bookmarkedIds,
-                            onClick = { navigator.push(ArticleDetailScreen(article.id)) },
+                            onClick = { navigator.push(ArticleDetailScreen(article)) },
                             onToggleBookmark = { model.toggleBookmark(article) }
                         )
                     }

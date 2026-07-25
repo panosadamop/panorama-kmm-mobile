@@ -33,11 +33,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import gr.panoramapolihnitou.app.data.model.Article
 import gr.panoramapolihnitou.app.di.AppGraph
-import gr.panoramapolihnitou.app.ui.UiState
 import gr.panoramapolihnitou.app.ui.ads.BannerAd
-import gr.panoramapolihnitou.app.ui.components.ErrorView
 import gr.panoramapolihnitou.app.ui.components.HtmlContent
-import gr.panoramapolihnitou.app.ui.components.LoadingView
 import gr.panoramapolihnitou.app.ui.components.NetworkImage
 import gr.panoramapolihnitou.app.ui.components.PanoramaTopBar
 import gr.panoramapolihnitou.app.ui.components.TagPills
@@ -47,21 +44,20 @@ import gr.panoramapolihnitou.app.util.formatWpDate
 import gr.panoramapolihnitou.app.util.removeGreekAccents
 import gr.panoramapolihnitou.app.util.stripHtml
 
-data class ArticleDetailScreen(val articleId: Long) : Screen {
+data class ArticleDetailScreen(val article: Article) : Screen {
 
-    override val key: String get() = "article-$articleId"
+    override val key: String get() = "article-${article.id}"
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val sharer = LocalSharer.current
         val model = rememberScreenModel {
-            ArticleDetailScreenModel(articleId, AppGraph.repository, AppGraph.bookmarkStore)
+            ArticleDetailScreenModel(article, AppGraph.bookmarkStore)
         }
-        val state by model.state.collectAsState()
+        val current by model.article.collectAsState()
         val bookmarks by model.bookmarks.collectAsState()
-        val isBookmarked = bookmarks.any { it.id == articleId }
-        val current = (state as? UiState.Success)?.data
+        val isBookmarked = bookmarks.any { it.id == current.id }
 
         Column(Modifier.fillMaxSize()) {
             PanoramaTopBar(
@@ -69,10 +65,7 @@ data class ArticleDetailScreen(val articleId: Long) : Screen {
                 showBack = true,
                 onBack = { navigator.pop() },
                 actions = {
-                    IconButton(
-                        onClick = { current?.let(model::toggleBookmark) },
-                        enabled = current != null
-                    ) {
+                    IconButton(onClick = { model.toggleBookmark(current) }) {
                         Icon(
                             imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
                             contentDescription = "Σελιδοδείκτης",
@@ -81,26 +74,19 @@ data class ArticleDetailScreen(val articleId: Long) : Screen {
                     }
                     IconButton(
                         onClick = {
-                            current?.let {
-                                sharer.shareText(
-                                    title = stripHtml(it.title),
-                                    text = stripHtml(it.title),
-                                    url = it.link
-                                )
-                            }
-                        },
-                        enabled = current != null
+                            sharer.shareText(
+                                title = stripHtml(current.title),
+                                text = stripHtml(current.title),
+                                url = current.link
+                            )
+                        }
                     ) {
                         Icon(Icons.Filled.Share, contentDescription = "Κοινοποίηση", tint = PanoramaColors.textWhite)
                     }
                 }
             )
 
-            when (val s = state) {
-                is UiState.Loading -> LoadingView()
-                is UiState.Error -> ErrorView(s.message, model::load)
-                is UiState.Success -> ArticleBody(s.data)
-            }
+            ArticleBody(current)
         }
     }
 }

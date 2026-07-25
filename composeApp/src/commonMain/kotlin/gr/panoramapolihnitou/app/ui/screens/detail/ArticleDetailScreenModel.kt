@@ -1,40 +1,26 @@
 package gr.panoramapolihnitou.app.ui.screens.detail
 
 import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.screenModelScope
 import gr.panoramapolihnitou.app.data.local.BookmarkStore
 import gr.panoramapolihnitou.app.data.model.Article
-import gr.panoramapolihnitou.app.data.repository.ContentRepository
-import gr.panoramapolihnitou.app.ui.UiState
-import gr.panoramapolihnitou.app.ui.toUserMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
+/**
+ * The caller already has the full [Article] (it came from a list/slider the user
+ * tapped), so this screen model just holds it — no need to re-fetch it from the
+ * network by id.
+ */
 class ArticleDetailScreenModel(
-    private val articleId: Long,
-    private val repository: ContentRepository,
+    initialArticle: Article,
     val bookmarkStore: BookmarkStore
 ) : ScreenModel {
 
-    private val _state = MutableStateFlow<UiState<Article>>(UiState.Loading)
-    val state: StateFlow<UiState<Article>> = _state.asStateFlow()
+    private val _article = MutableStateFlow(initialArticle)
+    val article: StateFlow<Article> = _article.asStateFlow()
 
     val bookmarks: StateFlow<List<Article>> = bookmarkStore.bookmarks
-
-    init {
-        load()
-    }
-
-    fun load() {
-        _state.value = UiState.Loading
-        screenModelScope.launch {
-            runCatching { repository.getArticle(articleId) }
-                .onSuccess { _state.value = UiState.Success(it) }
-                .onFailure { _state.value = UiState.Error(it.toUserMessage()) }
-        }
-    }
 
     fun toggleBookmark(article: Article) = bookmarkStore.toggle(article)
 }

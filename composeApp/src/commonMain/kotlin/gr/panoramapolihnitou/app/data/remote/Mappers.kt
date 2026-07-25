@@ -38,6 +38,7 @@ fun PostDto.toArticle(): Article = Article(
     id = id,
     title = stripHtml(title.rendered),
     excerptHtml = excerpt.rendered,
+    excerptText = stripHtml(excerpt.rendered),
     contentHtml = content.rendered,
     dateIso = date,
     link = link,

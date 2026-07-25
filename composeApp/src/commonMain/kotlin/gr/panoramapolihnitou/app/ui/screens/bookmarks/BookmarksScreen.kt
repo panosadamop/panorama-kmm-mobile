@@ -66,7 +66,7 @@ class BookmarksScreen : Screen {
                         ArticleCard(
                             article = article,
                             isBookmarked = true,
-                            onClick = { navigator.push(ArticleDetailScreen(article.id)) },
+                            onClick = { navigator.push(ArticleDetailScreen(article)) },
                             onToggleBookmark = { store.toggle(article) }
                         )
                     }

@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import gr.panoramapolihnitou.app.data.model.Article
 import gr.panoramapolihnitou.app.util.formatWpDate
 import gr.panoramapolihnitou.app.util.removeGreekAccents
-import gr.panoramapolihnitou.app.util.stripHtml
 
 /** Card used across the home feed, article lists, bookmarks and search results. */
 @Composable
@@ -64,10 +63,9 @@ fun ArticleCard(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(top = 4.dp)
             )
-            val excerpt = stripHtml(article.excerptHtml)
-            if (excerpt.isNotBlank()) {
+            if (article.excerptText.isNotBlank()) {
                 Text(
-                    text = excerpt,
+                    text = article.excerptText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,

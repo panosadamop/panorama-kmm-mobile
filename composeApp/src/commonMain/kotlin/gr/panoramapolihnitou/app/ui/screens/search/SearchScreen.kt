@@ -82,7 +82,7 @@ class SearchScreen : Screen {
                             ArticleCard(
                                 article = article,
                                 isBookmarked = article.id in bookmarkedIds,
-                                onClick = { navigator.push(ArticleDetailScreen(article.id)) },
+                                onClick = { navigator.push(ArticleDetailScreen(article)) },
                                 onToggleBookmark = { model.toggleBookmark(article) }
                             )
                         }

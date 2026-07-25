@@ -104,7 +104,7 @@ data class ArticleListScreen(
                             item(key = "cat-slider") {
                                 FeaturedSlider(
                                     articles = top,
-                                    onArticleClick = { navigator.push(ArticleDetailScreen(it.id)) }
+                                    onArticleClick = { navigator.push(ArticleDetailScreen(it)) }
                                 )
                             }
                             item(key = "cat-banner") { BannerAd(Modifier.padding(vertical = 4.dp)) }
@@ -114,7 +114,7 @@ data class ArticleListScreen(
                             ArticleCard(
                                 article = article,
                                 isBookmarked = article.id in bookmarkedIds,
-                                onClick = { navigator.push(ArticleDetailScreen(article.id)) },
+                                onClick = { navigator.push(ArticleDetailScreen(article)) },
                                 onToggleBookmark = { model.toggleBookmark(article) },
                                 modifier = Modifier.padding(horizontal = 16.dp)
                             )

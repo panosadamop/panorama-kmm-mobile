@@ -12,6 +12,7 @@ data class Article(
     val id: Long,
     val title: String,
     val excerptHtml: String,
+    val excerptText: String,
     val contentHtml: String,
     val dateIso: String,
     val link: String,

@@ -12,7 +12,7 @@ import gr.panoramapolihnitou.app.data.repository.ContentRepository
  * follow. Screen models pull what they need from here.
  */
 object AppGraph {
-    private val httpClient by lazy { createHttpClient() }
+    val httpClient by lazy { createHttpClient() }
     private val api by lazy { WordPressApi(httpClient) }
 
     val repository: ContentRepository by lazy { ContentRepository(api) }

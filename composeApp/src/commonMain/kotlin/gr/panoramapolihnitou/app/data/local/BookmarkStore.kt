@@ -2,9 +2,13 @@ package gr.panoramapolihnitou.app.data.local
 
 import com.russhwolf.settings.Settings
 import gr.panoramapolihnitou.app.data.model.Article
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 
@@ -19,6 +23,7 @@ class BookmarkStore(
 ) {
     private val key = "bookmarked_articles_v1"
     private val serializer = ListSerializer(Article.serializer())
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val _bookmarks = MutableStateFlow(load())
     val bookmarks: StateFlow<List<Article>> = _bookmarks.asStateFlow()
@@ -28,8 +33,10 @@ class BookmarkStore(
     }.getOrNull().orEmpty()
 
     private fun persist(list: List<Article>) {
-        settings.putString(key, json.encodeToString(serializer, list))
         _bookmarks.value = list
+        scope.launch {
+            settings.putString(key, json.encodeToString(serializer, list))
+        }
     }
 
     fun isBookmarked(id: Long): Boolean = _bookmarks.value.any { it.id == id }

@@ -11,10 +11,44 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
 import coil3.compose.LocalPlatformContext
 import coil3.compose.SubcomposeAsyncImage
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import gr.panoramapolihnitou.app.di.AppGraph
+import gr.panoramapolihnitou.app.util.imageCacheDir
+
+/** Builds the app-wide [ImageLoader], reusing the shared Ktor engine and giving
+ *  the image cache explicit memory/disk budgets instead of Coil's defaults. */
+private object AppImageLoaderFactory : SingletonImageLoader.Factory {
+    override fun newImageLoader(context: PlatformContext): ImageLoader =
+        ImageLoader.Builder(context)
+            .components {
+                add(KtorNetworkFetcherFactory(httpClient = AppGraph.httpClient))
+            }
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, percent = 0.25)
+                    .build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(imageCacheDir(context))
+                    .maxSizeBytes(50L * 1024 * 1024)
+                    .build()
+            }
+            .build()
+}
+
+private val imageLoaderInstalled: Unit by lazy {
+    SingletonImageLoader.setSafe(AppImageLoaderFactory)
+}
 
 /**
  * Coil-backed image with a graceful placeholder for the (common) case of posts
@@ -27,6 +61,8 @@ fun NetworkImage(
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop
 ) {
+    imageLoaderInstalled
+
     if (url.isNullOrBlank()) {
         Box(modifier) { Placeholder() }
         return
