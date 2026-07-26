@@ -36,7 +36,7 @@ class PreferencesStore(
         // Baseline is a little larger than 1.0 for comfortable reading. This only
         // applies when the user hasn't chosen a size; a value they set with the
         // A−/A+ control is persisted and always takes precedence over this default.
-        const val DEFAULT_SCALE = 1.15f
+        const val DEFAULT_SCALE = 1.05f
         const val STEP = 0.1f
     }
 }

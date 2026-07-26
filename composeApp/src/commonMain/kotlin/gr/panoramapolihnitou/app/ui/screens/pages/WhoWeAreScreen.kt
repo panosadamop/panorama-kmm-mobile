@@ -22,7 +22,9 @@ import gr.panoramapolihnitou.app.ui.components.NetworkImage
 import gr.panoramapolihnitou.app.ui.components.PanoramaTopBar
 import gr.panoramapolihnitou.app.ui.theme.PanoramaColors
 
-private const val BANNER = "https://panoramapolihnitou.gr/wp-content/uploads/2024/10/kolaz-jpg.avif"
+// The .avif derivative at this path isn't decodable by Coil on Android/iOS
+// without an extra codec; the site also serves the original JPEG at this URL.
+private const val BANNER = "https://panoramapolihnitou.gr/wp-content/uploads/2024/10/kolaz.jpg"
 
 private val paragraphs = listOf(
     "Υπήρχε από παλιά η διάθεσή μας για τη δημιουργία μιας ιστοσελίδας (site). Τον τελευταίο χρόνο, όμως, διαμορφώθηκε σε πρόθεση και τούτο επειδή:",
