@@ -4,17 +4,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 /**
- * Central switch + ad-unit configuration for banner ads. Defaults use Google's
- * public TEST ad units so the app shows test banners out of the box — replace
- * [bannerAdUnitId] (and the AdMob App ID in the Android manifest / iOS Info.plist)
- * with your real ids before publishing. See RUNNING.md → "Banner ads".
+ * Central switch + ad-unit configuration for banner ads.
+ *
+ * Ads are **off** for the store releases: the project only ever had Google's
+ * public TEST ad ids, which must not ship to production. The Ads SDK is not
+ * linked on either platform, so every [BannerAd] slot renders nothing.
+ *
+ * To go live, set [bannerAdUnitId] to a real `ca-app-pub-…/…` unit, flip
+ * [adsEnabled], and follow the platform steps in RUNNING.md → "Banner ads".
  */
 object AdConfig {
     /** Master on/off switch for all banner slots. */
-    var adsEnabled: Boolean = true
+    var adsEnabled: Boolean = false
 
-    /** AdMob banner ad-unit id (test unit by default). */
-    var bannerAdUnitId: String = "ca-app-pub-3940256099942544/6300978111"
+    /** AdMob banner ad-unit id — set a real one before enabling ads. */
+    var bannerAdUnitId: String = ""
 }
 
 /**

@@ -5,6 +5,45 @@ behind the key decisions. Newest entries at the top.
 
 ---
 
+## 2026-07-28 — Google Play release prep (1.0.0)
+
+Made the Android app publishable and produced the signed artifact.
+
+- **Target API 36.** `compileSdk`/`targetSdk` 34 → 36 (Play requires API 36 for new
+  apps and updates from 31 Aug 2026). Needed AGP 8.5.2 → **8.11.2** and the Gradle
+  wrapper 8.9 → **8.13**; Kotlin 2.1.0 / Compose MP 1.7.3 left untouched.
+- **AdMob removed for 1.0.0.** The project only ever had Google's public *test* ad
+  ids, which must not ship to production. Dropped the `play-services-ads`
+  dependency, the `AD_ID` permission and the AdMob `APPLICATION_ID` meta-data,
+  deleted `PanoramaApplication` (it existed only to call `MobileAds.initialize`),
+  and made `PlatformBannerAd` a no-op on Android too. `AdConfig.adsEnabled = false`,
+  `bannerAdUnitId = ""`. The `BannerAd` slots and the catalog entry (now pinned to a
+  16 KB-compliant 24.x) stay, so re-enabling is a documented, contained change.
+  Release APK verified to contain **zero** `com.google.android.gms.ads` references
+  and no test ad ids.
+- **Upload keystore created.** `release-keystore.jks` (PKCS12, RSA 2048, alias
+  `panorama`, valid to 2053) + `keystore.properties`, both git-ignored. Fixed the
+  `storeFile` path in `keystore.properties.sample` (it's resolved against the
+  project root, so `../` was wrong).
+- **Artifacts:** `dist\panorama-release.aab` (13.4 MB, signed, for Play) and
+  `dist\panorama-release.apk` (sideload/testing). Added `build-play-bundle.bat`.
+- **Verified:** `targetSdk 36`; only `INTERNET` requested; native libs are 16 KB
+  page-size aligned (ELF `LOAD` align `0x4000`, zipalign `-P 16` passes) as Android
+  15+ requires; signature present; release build installed and exercised on a
+  Pixel 10 Pro emulator (Android 17) — live content, edge-to-edge insets correct,
+  no crashes, no ad slots.
+- **Store assets** in `app-previews/play-store/`: `play-icon-512.png`,
+  `feature-graphic-1024x500.png` (generated from the app icon + Ubuntu Bold),
+  5 phone screenshots (1280×2600, system bars cropped), `play-store-listing.md`
+  (all listing copy + questionnaire answers) and `privacy-policy-el.md` (draft to
+  publish — Play needs a public privacy-policy URL).
+- RUNNING.md §1.1/§3/§4.1/§4.3/§5/§6 updated to match.
+
+**Still needs a human:** publish the privacy policy, create the Play Console app,
+paste the listing, upload the AAB, and back up the keystore + password offline.
+
+---
+
 ## 2026-07-23 — Preview APK (signed, sideloadable)
 
 - Added `build-preview-apk.bat` — one command builds a **signed release APK** and

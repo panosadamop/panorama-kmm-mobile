@@ -72,7 +72,9 @@ kotlin {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.play.services.ads)
+            // AdMob intentionally not linked for the 1.0.0 Play release — the app
+            // shipped Google's *test* ad ids, which must never reach production.
+            // Re-add libs.play.services.ads when real ids exist (RUNNING.md § 4.3).
         }
 
         iosMain.dependencies {

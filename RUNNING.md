@@ -21,15 +21,20 @@ Mac steps that iOS requires). It covers four things:
 
 | Tool | Version | Notes |
 |---|---|---|
-| **Android Studio** | Ladybug (2024.2) or newer — Meerkat recommended | Bundles a JDK 17 and the Android SDK |
-| **JDK** | 17 (bundled with Android Studio) | Only needed separately for command-line Gradle |
-| **Android SDK** | API 34 (compileSdk) + build-tools | Installed via Android Studio SDK Manager |
+| **Android Studio** | Meerkat (2024.3) or newer | Needs to understand AGP 8.11 |
+| **JDK** | 17 or 21 | Bundled with Android Studio; needed separately for command-line Gradle |
+| **Android SDK** | API 36 (compileSdk) + build-tools 36 | Installed via Android Studio SDK Manager |
+| **Gradle** | 8.13 (via the wrapper) | AGP 8.11.2 requires Gradle 8.13+ |
 | A device or emulator | API 24+ | Enable *USB debugging* on a physical phone |
+
+> **Why API 36:** Google Play requires new apps and updates to target API 36
+> from **31 August 2026**. `compileSdk`/`targetSdk` are set to 36 in
+> `gradle/libs.versions.toml`.
 
 **Steps**
 
-1. Install **Android Studio** and, during setup, install the **Android SDK Platform 34**
-   and an emulator image (e.g. *Pixel 7, API 34*).
+1. Install **Android Studio** and, during setup, install the **Android SDK Platform 36**
+   and an emulator image (e.g. *Pixel 8, API 36*).
 2. Open the `panorama-app/` folder (the one containing `settings.gradle.kts`).
 3. Wait for **Gradle sync**. On first sync Android Studio:
    - downloads all dependencies from the version catalog,
@@ -38,9 +43,11 @@ Mac steps that iOS requires). It covers four things:
 4. If sync complains it can't find the SDK, copy `local.properties.sample` to
    `local.properties` and set `sdk.dir` (see that file for the Windows path format).
 
-> **Command-line Gradle without Android Studio?** Install a JDK 17 and Gradle 8.9, then
-> run `gradle wrapper --gradle-version 8.9` once in the project root to create the
+> **Command-line Gradle without Android Studio?** Install a JDK 17/21 and Gradle 8.13,
+> then run `gradle wrapper --gradle-version 8.13` once in the project root to create the
 > wrapper JAR. After that, `./gradlew` (Git Bash) or `gradlew.bat` (cmd/PowerShell) work.
+> Set `JAVA_HOME` to the JDK if Gradle can't find one, e.g.
+> `JAVA_HOME="C:/Program Files/Java/jdk-21.0.11" ./gradlew :composeApp:bundleRelease`.
 
 ### 1.2 iOS (Mac only)
 
@@ -142,9 +149,9 @@ just needs "Install unknown apps" allowed for the app you open the file with).
 Output: **`dist\panorama-preview.apk`**. Transfer it to the phone (USB copy, Google
 Drive, email, etc.) and tap to install.
 
-It signs with `preview-keystore.jks` (config in `keystore.properties`). Both are created
-for you and kept out of git; they're for **internal test builds only** — use a real,
-securely-stored keystore for Play Store releases (§3.2).
+It signs with whatever `keystore.properties` points at — currently the real upload
+keystore `release-keystore.jks` (§3.2), so preview APKs and Play uploads share the
+same signature. Keep that file and its password backed up and out of git.
 
 ### 3.1 Android — quick shareable APK (debug)
 
@@ -160,6 +167,13 @@ Testers must allow *Install unknown apps* on their device.
 ### 3.2 Android — signed release APK/AAB
 
 Play Store and "proper" test builds need a **signed release**.
+
+> **Already done on this machine.** `release-keystore.jks` (RSA 2048, alias
+> `panorama`, valid until 2053) and `keystore.properties` exist in the project
+> root and are **excluded from git**. ⚠️ **Back both up offline now** (password
+> manager + encrypted backup): if you lose them you cannot ship updates signed
+> with the same upload key and have to ask Google to reset it. The steps below
+> are only needed on a new machine or to create a fresh key.
 
 **Step 1 — create an upload keystore (once):**
 
@@ -183,12 +197,17 @@ file automatically if it exists.
 **Step 3 — build:**
 
 ```powershell
+.\build-play-bundle.bat                        # signed AAB → dist\panorama-release.aab
 .\gradlew.bat :composeApp:assembleRelease      # signed APK  → build/outputs/apk/release/
 .\gradlew.bat :composeApp:bundleRelease        # signed AAB  → build/outputs/bundle/release/
 ```
 
 - **APK** (`composeApp-release.apk`) — for direct sideloading / Firebase App Distribution.
 - **AAB** (`composeApp-release.aab`) — the format Google Play requires.
+
+`build-play-bundle.bat` is the one-command path: it checks that
+`keystore.properties` exists, picks a JDK, builds the bundle and copies it to
+`dist\panorama-release.aab`.
 
 ### 3.3 Android — distributing to testers
 
@@ -225,26 +244,40 @@ Bump these together for each store submission:
 
 **Prerequisites**
 - A **Google Play Console** account (one-time $25 fee).
-- A signed **AAB** (§3.2).
-- Store assets: app icon (512×512 PNG), feature graphic (1024×500), 2–8 phone
-  screenshots, short + full description, privacy policy URL.
+- A signed **AAB** — already built: `dist\panorama-release.aab` (§3.2).
+- Store assets — already prepared in `app-previews/play-store/`:
+  - `play-icon-512.png` (512×512 app icon)
+  - `feature-graphic-1024x500.png`
+  - `screenshots/phone/01…05` (5 phone screenshots, 1280×2600)
+  - `play-store-listing.md` — every text field + questionnaire answer to paste
+  - `privacy-policy-el.md` — draft policy to publish on the website
+- A **public privacy policy URL** (mandatory). Publish `privacy-policy-el.md` on
+  panoramapolihnitou.gr first; you cannot submit without the URL.
 
 **Recommended: Play App Signing.** Let Google manage the app signing key; you keep only
 the *upload* key created in §3.2. This is the default when you create the app.
 
 **Steps**
-1. **Play Console → Create app.** Set name (*Panorama Πολιχνίτου*), default language
-   (Greek), app/game = App, free.
-2. Complete **Dashboard → Set up your app**: privacy policy, ads declaration, content
-   rating questionnaire, target audience, data safety form (the app only reads public
-   content and stores bookmarks locally → declare accordingly).
-3. **Release → Testing → Internal testing → Create release.**
-   - Upload `composeApp-release.aab`.
-   - Add release notes. Save → Review → **Start rollout to Internal testing**.
+1. **Play Console → Create app.** Name *Πανόραμα Πολιχνίτου*, default language
+   **Greek (el-GR)**, app/game = App, free.
+2. Complete **Dashboard → Set up your app** using the answers in
+   `app-previews/play-store/play-store-listing.md`: privacy policy URL, app
+   access (no login), **ads = No** (the Ads SDK is not linked in 1.0.0), content
+   rating questionnaire, target audience (18+), news-publisher details, and the
+   data safety form (**no data collected**, everything over HTTPS, bookmarks and
+   settings stay on the device).
+3. **Main store listing:** paste the short/full description and upload the icon,
+   feature graphic and the 5 phone screenshots.
+4. **Release → Testing → Internal testing → Create release.**
+   - Upload `dist\panorama-release.aab`.
+   - Paste the 1.0.0 release notes. Save → Review → **Start rollout to Internal testing**.
    - Add tester emails and share the opt-in URL. Verify on a real device.
-4. Promote the same build up the tracks: **Internal → Closed → Open → Production**.
-5. **Production → Create release**, upload (or promote) the AAB, roll out. First
+5. Promote the same build up the tracks: **Internal → Closed → Open → Production**.
+6. **Production → Create release**, promote the AAB, roll out. The first
    production submission triggers a Google review (hours to a few days).
+
+> **Every later upload** needs a higher `versionCode` in
+> `composeApp/build.gradle.kts` (§4.0). Google rejects a repeat of `versionCode 1`.
 
 **CLI alternative (CI):** use [`fastlane supply`](https://docs.fastlane.tools/actions/supply/)
 or the Google Play Developer API with a service account to upload AABs automatically.
@@ -279,14 +312,23 @@ or `xcrun altool`/`notarytool` for uploads.
 
 ---
 
-## 4.3 Banner ads (AdMob)
+## 4.3 Banner ads (AdMob) — **disabled in 1.0.0**
 
-The app ships with **Google AdMob banner** support, using Google's public **test**
-ad units by default (so you see test banners immediately, with no risk of policy
-violations).
+Ads are **off** and the Google Mobile Ads SDK is **not linked** on either
+platform. Reason: the only ad ids that ever existed in this project were
+Google's public **test** ids, and shipping those to production violates AdMob
+policy (and would show fake banners to real users). So for the store release:
 
-**Where banners appear:** home feed (between sections + at the end), category lists
-(under the slider), and the bottom of each article. Add more anywhere with one line:
+- `AdConfig.adsEnabled = false`, `AdConfig.bannerAdUnitId = ""`
+  (`ui/ads/BannerAd.kt`)
+- `PlatformBannerAd` is a no-op on Android and iOS
+- no `play-services-ads` dependency, no `AD_ID` permission, no AdMob
+  `APPLICATION_ID` meta-data in the manifest
+- Play **ads declaration = No**, and no advertising ID in Data safety
+
+**Where the ad slots still are:** home feed (between sections + at the end),
+category lists (under the slider), and the bottom of each article — they simply
+render nothing. Add more anywhere with one line:
 
 ```kotlin
 import gr.panoramapolihnitou.app.ui.ads.BannerAd
@@ -294,19 +336,25 @@ import gr.panoramapolihnitou.app.ui.ads.BannerAd
 BannerAd(Modifier.padding(vertical = 8.dp))
 ```
 
-**Turn ads on/off at runtime:** `AdConfig.adsEnabled = false` (in
-`ui/ads/BannerAd.kt`) hides every slot.
+**Go live with your own ads (Android, in a later release):**
+1. Create an AdMob account, an app, and a **banner ad unit**; note the
+   `ca-app-pub-…~…` app id and the `ca-app-pub-…/…` ad-unit id.
+2. Re-add `implementation(libs.play.services.ads)` to `androidMain` in
+   `composeApp/build.gradle.kts` (the catalog entry is still there, pinned to a
+   16 KB-page-size-compliant 24.x — required for Android 15+).
+3. In `composeApp/src/androidMain/AndroidManifest.xml` restore the
+   `com.google.android.gms.permission.AD_ID` permission and the
+   `com.google.android.gms.ads.APPLICATION_ID` meta-data with **your** app id,
+   plus an `Application` subclass calling `MobileAds.initialize(this)` (see the
+   git history for the deleted `PanoramaApplication.kt`).
+4. Set `AdConfig.adsEnabled = true` and `AdConfig.bannerAdUnitId` to your real
+   unit, and restore the `AdView` body in `BannerAd.android.kt` (the file's
+   KDoc lists the exact calls).
+5. In Play Console change **ads declaration to Yes** and re-do **Data safety**
+   to declare Advertising ID collection.
+6. Never ship test ids to production, and don't click your own live ads.
 
-**Go live with your own ads (before publishing):**
-1. Create an AdMob account, an app, and a **banner ad unit**.
-2. **Android:** replace the two placeholders —
-   - App ID → `composeApp/src/androidMain/AndroidManifest.xml`
-     (`com.google.android.gms.ads.APPLICATION_ID`, the `ca-app-pub-…~…` value).
-   - Ad-unit ID → `AdConfig.bannerAdUnitId` in `ui/ads/BannerAd.kt`
-     (the `ca-app-pub-…/…` value).
-3. Never ship test IDs to production, and don't click your own live ads.
-
-**iOS:** banner rendering is currently a no-op stub (`BannerAd.ios.kt`) so the shared
+**iOS:** banner rendering is a no-op stub (`BannerAd.ios.kt`) so the shared
 code compiles. To enable on iOS (on a Mac):
 1. Add the **Google-Mobile-Ads-SDK** to `iosApp` (Swift Package Manager or CocoaPods).
 2. Add `GADApplicationIdentifier` (your AdMob app id) + `SKAdNetworkItems` to
@@ -321,14 +369,16 @@ code compiles. To enable on iOS (on a Mac):
 
 | Symptom | Fix |
 |---|---|
-| Gradle sync fails: *"wrapper jar missing"* | Let Android Studio sync once, or run `gradle wrapper --gradle-version 8.9`. |
+| Gradle sync fails: *"wrapper jar missing"* | Let Android Studio sync once, or run `gradle wrapper --gradle-version 8.13`. |
+| Gradle fails: *"requires Gradle 8.13 or newer"* / *compileSdk 36 unsupported* | Old wrapper or old Android Studio. The project needs Gradle 8.13 + AGP 8.11.2 + SDK 36. |
 | *"SDK location not found"* | Create `local.properties` with `sdk.dir` (see `local.properties.sample`). |
 | App shows the retry screen | Device offline, or the WordPress API is unreachable — check `https://panoramapolihnitou.gr/wp-json/wp/v2/posts` in a browser. |
 | Images don't load | Confirm posts have a *featured image*; the app falls back to a placeholder icon otherwise. |
 | iOS: *"ComposeApp framework not found"* | Ensure the "Compile Kotlin Framework" build phase ran; on a Mac run `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode` once. |
 | Release build not signed | Create `keystore.properties` from the sample (§3.2). Without it, `assembleRelease` produces an **unsigned** APK. |
 | `adb` not found | Add `%LOCALAPPDATA%\Android\Sdk\platform-tools` to your PATH. |
-| Test banner not showing | Give it a few seconds on first load; ensure the device is online and the AdMob App ID meta-data is present in the manifest. Set `AdConfig.adsEnabled = false` to hide slots. |
+| No banners anywhere | Expected — ads are disabled in 1.0.0 (§4.3). |
+| Emulator screenshots come out black | `adb exec-out screencap` returns black for this app on some emulator GPU paths. Use `adb emu screenrecord screenshot <dir>` instead (that's how the Play screenshots were captured). |
 
 ---
 
@@ -340,7 +390,15 @@ code compiles. To enable on iOS (on a Mac):
 .\gradlew.bat :composeApp:assembleDebug      # debug APK
 .\gradlew.bat :composeApp:assembleRelease    # signed release APK
 .\gradlew.bat :composeApp:bundleRelease      # signed release AAB (for Play)
+.\build-play-bundle.bat                      # AAB + copy to dist\panorama-release.aab
+.\build-preview-apk.bat                      # sideloadable APK for testers
 .\gradlew.bat clean                          # clean
+
+# Verify a release artifact
+& "$env:LOCALAPPDATA\Android\Sdk\build-tools\36.0.0\aapt2.exe" dump badging `
+  composeApp\build\outputs\apk\release\composeApp-release.apk   # targetSdk, permissions
+& "$env:LOCALAPPDATA\Android\Sdk\build-tools\36.0.0\zipalign.exe" -c -P 16 -v 4 `
+  composeApp\build\outputs\apk\release\composeApp-release.apk   # 16 KB page alignment
 
 # iOS (Mac)
 ./gradlew :composeApp:embedAndSignAppleFrameworkForXcode   # build shared framework
