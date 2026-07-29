@@ -312,56 +312,28 @@ or `xcrun altool`/`notarytool` for uploads.
 
 ---
 
-## 4.3 Banner ads (AdMob) — **disabled in 1.0.0**
+## 4.3 Banner ads (AdMob) — **removed**
 
-Ads are **off** and the Google Mobile Ads SDK is **not linked** on either
-platform. Reason: the only ad ids that ever existed in this project were
-Google's public **test** ids, and shipping those to production violates AdMob
-policy (and would show fake banners to real users). So for the store release:
+The app shipped 1.0.0 with ads disabled, and the AdMob/Google Mobile Ads
+integration has since been **fully removed** — not just toggled off: the
+`ui/ads/` package, the `play-services-ads` dependency, the `AD_ID` permission,
+and the AdMob `APPLICATION_ID` manifest meta-data are all gone from `main`.
+Reason: the only ad ids that ever existed in this project were Google's public
+**test** ids, and shipping those to production violates AdMob policy.
 
-- `AdConfig.adsEnabled = false`, `AdConfig.bannerAdUnitId = ""`
-  (`ui/ads/BannerAd.kt`)
-- `PlatformBannerAd` is a no-op on Android and iOS
-- no `play-services-ads` dependency, no `AD_ID` permission, no AdMob
-  `APPLICATION_ID` meta-data in the manifest
-- Play **ads declaration = No**, and no advertising ID in Data safety
+Play **ads declaration = No**, no advertising ID in Data safety.
 
-**Where the ad slots still are:** home feed (between sections + at the end),
-category lists (under the slider), and the bottom of each article — they simply
-render nothing. Add more anywhere with one line:
-
-```kotlin
-import gr.panoramapolihnitou.app.ui.ads.BannerAd
-// inside any Composable / LazyColumn item:
-BannerAd(Modifier.padding(vertical = 8.dp))
-```
-
-**Go live with your own ads (Android, in a later release):**
-1. Create an AdMob account, an app, and a **banner ad unit**; note the
-   `ca-app-pub-…~…` app id and the `ca-app-pub-…/…` ad-unit id.
-2. Re-add `implementation(libs.play.services.ads)` to `androidMain` in
-   `composeApp/build.gradle.kts` (the catalog entry is still there, pinned to a
-   16 KB-page-size-compliant 24.x — required for Android 15+).
-3. In `composeApp/src/androidMain/AndroidManifest.xml` restore the
-   `com.google.android.gms.permission.AD_ID` permission and the
-   `com.google.android.gms.ads.APPLICATION_ID` meta-data with **your** app id,
-   plus an `Application` subclass calling `MobileAds.initialize(this)` (see the
-   git history for the deleted `PanoramaApplication.kt`).
-4. Set `AdConfig.adsEnabled = true` and `AdConfig.bannerAdUnitId` to your real
-   unit, and restore the `AdView` body in `BannerAd.android.kt` (the file's
-   KDoc lists the exact calls).
-5. In Play Console change **ads declaration to Yes** and re-do **Data safety**
-   to declare Advertising ID collection.
-6. Never ship test ids to production, and don't click your own live ads.
-
-**iOS:** banner rendering is a no-op stub (`BannerAd.ios.kt`) so the shared
-code compiles. To enable on iOS (on a Mac):
-1. Add the **Google-Mobile-Ads-SDK** to `iosApp` (Swift Package Manager or CocoaPods).
-2. Add `GADApplicationIdentifier` (your AdMob app id) + `SKAdNetworkItems` to
-   `iosApp/iosApp/Info.plist`, and call `GADMobileAds.sharedInstance().start(...)`
-   in `iOSApp.swift`.
-3. Replace the stub body with a `UIKitView` hosting a `GADBannerView`
-   (`adUnitID = adUnitId`, `rootViewController` = top view controller, `load(GADRequest())`).
+**To add ads again in a future release:** there's nothing to "restore" — the
+old `BannerAd` composable + platform actuals are gone, so this would be a
+fresh AdMob integration (an AdMob account/app/ad-unit, the SDK dependency on
+Android, `play-services-ads` in `androidMain`, an `AD_ID` permission +
+`APPLICATION_ID` meta-data in the manifest, `MobileAds.initialize(...)` at
+app start, an `AdView`-hosting composable, and — for iOS — the
+Google-Mobile-Ads-SDK via Swift Package Manager, `GADApplicationIdentifier` +
+`SKAdNetworkItems` in `Info.plist`, `GADMobileAds.sharedInstance().start(...)`
+in `iOSApp.swift`, and a `GADBannerView`-hosting `UIKitView`). Whichever
+release adds it back should also flip Play's ads declaration to **Yes** and
+re-do the Data safety form to declare Advertising ID collection.
 
 ---
 

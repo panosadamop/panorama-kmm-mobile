@@ -80,7 +80,6 @@ kotlin {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.play.services.ads)
             implementation(platform("com.google.firebase:firebase-bom:${libs.versions.firebaseBom.get()}"))
             implementation(libs.firebase.messaging)
         }

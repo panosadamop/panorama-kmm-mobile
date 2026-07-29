@@ -38,7 +38,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import gr.panoramapolihnitou.app.di.AppGraph
 import gr.panoramapolihnitou.app.ui.UiState
-import gr.panoramapolihnitou.app.ui.ads.BannerAd
 import gr.panoramapolihnitou.app.ui.components.ArticleCard
 import gr.panoramapolihnitou.app.ui.components.EmptyView
 import gr.panoramapolihnitou.app.ui.components.ErrorView
@@ -107,7 +106,6 @@ data class ArticleListScreen(
                                     onArticleClick = { navigator.push(ArticleDetailScreen(it)) }
                                 )
                             }
-                            item(key = "cat-banner") { BannerAd(Modifier.padding(vertical = 4.dp)) }
                         }
                         // The rest as standard cards.
                         items(s.data.drop(3), key = { it.id }) { article ->

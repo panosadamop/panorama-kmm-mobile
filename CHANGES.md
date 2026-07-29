@@ -5,6 +5,21 @@ behind the key decisions. Newest entries at the top.
 
 ---
 
+## 2026-07-29 — AdMob fully removed
+
+Not a re-disable — deleted outright: `ui/ads/` (`BannerAd.kt` + Android/iOS
+actuals), the `MobileAds.initialize` call in `PanoramaApplication.kt`, the
+`play-services-ads` dependency (`composeApp/build.gradle.kts` +
+`gradle/libs.versions.toml`, which also had a stray duplicate `playServicesAds`
+version key cleaned up in the process), the `AD_ID` permission and AdMob
+`APPLICATION_ID` meta-data in `AndroidManifest.xml`, and every `BannerAd(...)`
+call site in `HomeScreen.kt`, `ArticleListScreen.kt`, `ArticleDetailScreen.kt`.
+RUNNING.md §4.3 rewritten to describe the removal instead of "disabled, flip
+these flags to re-enable." Verified: `:composeApp:assembleDebug` succeeds with
+zero remaining references to AdMob/BannerAd/AD_ID anywhere in the codebase.
+
+---
+
 ## 2026-07-29 — Native capabilities for App Store 4.2 resubmission
 
 Apple rejected the iOS submission under **Guideline 4.2 (Minimum Functionality)**

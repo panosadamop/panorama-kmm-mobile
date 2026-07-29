@@ -3,10 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A61502D3019DBAB0036E6C6 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = CF455BFE5015522750CD96DC /* FirebaseMessaging */; };
+		1A61502E3019DBAB0036E6C6 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4641C98511ED84C256DD6AF4 /* FirebaseCore */; };
+		1A615030301A2B2E0036E6C6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A61502F301A2B2E0036E6C6 /* GoogleService-Info.plist */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		5703C966A24E90F786B80B02 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C609B59F5483B139AA9AB1C /* Foundation.framework */; };
 		6C9BF843376B38B4A30A4B02 /* PanoramaWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE821243D8EFC3A973F2130E /* PanoramaWidget.swift */; };
@@ -51,6 +54,7 @@
 
 /* Begin PBXFileReference section */
 		058557BA273AAA24004C7B11 /* Preview Content */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Content"; sourceTree = "<group>"; };
+		1A61502F301A2B2E0036E6C6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		1D6003584A9F8223EE34D5AD /* iosApp.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = iosApp.entitlements; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
 		2AF50D947B22D3CA447E49B2 /* PanoramaWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PanoramaWidgetBundle.swift; sourceTree = "<group>"; };
@@ -72,6 +76,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A61502E3019DBAB0036E6C6 /* FirebaseCore in Frameworks */,
+				1A61502D3019DBAB0036E6C6 /* FirebaseMessaging in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -143,6 +149,7 @@
 		7555FF7D242A565900829871 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
+				1A61502F301A2B2E0036E6C6 /* GoogleService-Info.plist */,
 				2152FB032600AC8F00CF470E /* iOSApp.swift */,
 				7555FF82242A565900829871 /* ContentView.swift */,
 				AB0000000000000000000A55 /* Assets.xcassets */,
@@ -168,7 +175,6 @@
 				2AF50D947B22D3CA447E49B2 /* PanoramaWidgetBundle.swift */,
 				68ECE9E1AE3340FFF58A6C24 /* Info.plist */,
 			);
-			name = PanoramaWidget;
 			path = PanoramaWidget;
 			sourceTree = "<group>";
 		};
@@ -289,6 +295,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AB0000000000000000000B55 /* Assets.xcassets in Resources */,
+				1A615030301A2B2E0036E6C6 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

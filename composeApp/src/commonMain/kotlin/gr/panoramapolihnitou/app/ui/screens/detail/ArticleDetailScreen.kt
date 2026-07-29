@@ -33,7 +33,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import gr.panoramapolihnitou.app.data.model.Article
 import gr.panoramapolihnitou.app.di.AppGraph
-import gr.panoramapolihnitou.app.ui.ads.BannerAd
 import gr.panoramapolihnitou.app.ui.components.HtmlContent
 import gr.panoramapolihnitou.app.ui.components.NetworkImage
 import gr.panoramapolihnitou.app.ui.components.PanoramaTopBar
@@ -130,8 +129,6 @@ private fun ArticleBody(article: Article, modifier: Modifier = Modifier) {
             if (article.tagNames.isNotEmpty()) {
                 TagSection(article.tagNames)
             }
-
-            BannerAd(Modifier.padding(top = 20.dp))
         }
     }
 }

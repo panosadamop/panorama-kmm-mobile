@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Required by the Google Mobile Ads SDK on Android 13+. -->
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
     <!-- Required to show push notifications on Android 13+ (requested at runtime in MainActivity). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -15,12 +13,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Panorama">
-
-        <!-- AdMob application id. This is Google's public TEST app id — replace
-             with your own before publishing (see RUNNING.md → "Banner ads"). -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
 
         <service
             android:name=".notifications.PanoramaMessagingService"

@@ -18,12 +18,8 @@ serialization = "1.7.3"
 coil = "3.0.4"
 voyager = "1.1.0-beta03"
 multiplatformSettings = "1.2.0"
-playServicesAds = "23.6.0"
 firebaseBom = "33.7.0"
 googleServices = "4.4.2"
-# Unused while ads are off. 24.x is required for 16 KB page-size support on
-# Android 15+; keep this version when re-enabling (RUNNING.md § 4.3).
-playServicesAds = "24.9.0"
 
 [libraries]
 # Coroutines
@@ -56,8 +52,6 @@ multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-s
 
 # Android
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
-# Not wired into any source set — add back to androidMain when enabling AdMob.
-play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
 
 # Firebase (push notifications — see RUNNING.md → "Push notifications" for setup)
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
