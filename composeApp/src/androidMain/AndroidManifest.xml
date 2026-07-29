@@ -4,6 +4,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Required by the Google Mobile Ads SDK on Android 13+. -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <!-- Required to show push notifications on Android 13+ (requested at runtime in MainActivity). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".PanoramaApplication"
@@ -19,6 +21,17 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713" />
+
+        <service
+            android:name=".notifications.PanoramaMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="new_articles" />
 
         <activity
             android:name=".MainActivity"

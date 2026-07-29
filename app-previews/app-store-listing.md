@@ -6,6 +6,44 @@ from Apple are noted so nothing gets truncated at submission time.
 
 ---
 
+## Guideline 4.2 resubmission note
+
+The previous submission was rejected under **4.2 (Minimum Functionality)** —
+"just displays a website." Paste this into **App Store Connect → App Review
+Information → Notes** for the resubmission (English — App Review is primarily
+English-speaking regardless of the app's own UI language). Written to state
+plainly, in reviewer-scannable form, exactly what changed and why it answers
+the rejection — not to argue the previous rejection was wrong.
+
+```
+This app is the mobile companion for panoramapolihnitou.gr, the local news
+source for Polichnitos and the wider western Lesvos region in Greece — a
+community of a few thousand residents with no other dedicated local news app.
+
+Since the previous submission, we've added native capabilities that go beyond
+displaying the website:
+
+• Push notifications — every install subscribes to a "new article" topic and
+  is notified the moment new local news is published, without opening the app
+  or the website.
+• A Home Screen widget showing the latest headline, refreshed automatically.
+• True offline reading — bookmarked articles cache their full text AND images
+  to on-device storage (not just a link), so saved articles stay fully
+  readable with no connection, e.g. underground or in areas of Lesvos with
+  spotty mobile coverage.
+• Category browsing, full-text search, and a native reading experience
+  (dark mode, adjustable text size, native sharing) — none of which route
+  through a web view.
+
+The app reads only public content via the WordPress REST API — no accounts,
+no login, no user-generated content, nothing exempt from standard review.
+
+If anything about the native functionality isn't visible during review, happy
+to provide a walkthrough video — please let us know via the resolution center.
+```
+
+---
+
 ## App name (max 30 chars)
 
 ```

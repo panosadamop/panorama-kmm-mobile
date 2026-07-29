@@ -150,6 +150,14 @@ private val imgSrc = Regex("<img[^>]*?src\\s*=\\s*\"([^\"]+)\"[^>]*>", RegexOpti
 private val imgAlt = Regex("alt\\s*=\\s*\"([^\"]*)\"", RegexOption.IGNORE_CASE)
 private val blockSplit = Regex("</?(p|div|h[1-6]|li|blockquote|ul|ol|figure|br\\s*/?)[^>]*>", RegexOption.IGNORE_CASE)
 
+/** All `<img src>` URLs referenced in a post's content HTML, in document order. */
+fun extractImageUrls(rawHtml: String): List<String> =
+    imgSrc.findAll(sanitizePostHtml(rawHtml))
+        .map { it.groupValues[1] }
+        .filter { it.isNotBlank() }
+        .distinct()
+        .toList()
+
 /**
  * Splits post HTML into renderable blocks. Images are lifted out as standalone
  * [ContentBlock.Image] blocks; remaining text is grouped by block-level tags.

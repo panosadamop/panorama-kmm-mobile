@@ -317,6 +317,48 @@ code compiles. To enable on iOS (on a Mac):
 
 ---
 
+## 4.4 Push notifications (Firebase Cloud Messaging)
+
+Every install subscribes to a single topic, **`new_articles`**, at launch — no
+per-device token database to run or maintain. The WordPress site sends one FCM
+message per published post; every device that has the app installed hears
+about it. Both the Android and iOS client code already exist and no-op safely
+until you complete the setup below (matches the pattern used for the release
+keystore: missing config → feature silently skipped, not a crash).
+
+**One-time setup:**
+1. Create a project at [console.firebase.google.com](https://console.firebase.google.com).
+2. Add an **Android app** (package name `gr.panoramapolihnitou.app`) → download
+   `google-services.json` → place it at `composeApp/google-services.json`
+   (git-ignored; the Gradle plugin only applies once this file exists).
+3. Add an **iOS app** (bundle id `gr.panoramapolihnitou.app`) → download
+   `GoogleService-Info.plist` → drag it into the `iosApp/iosApp` group in Xcode,
+   **adding it to the `iosApp` target** (git-ignored; `AppDelegate.swift` only
+   configures Firebase once this file is present in the bundle).
+4. **APNs key** (iOS push requires this): Apple Developer → Certificates,
+   Identifiers & Profiles → Keys → create an **APNs Auth Key** → upload it to
+   Firebase Console → Project Settings → Cloud Messaging → Apple app
+   configuration.
+5. Rebuild both apps. Test by sending a message to the `new_articles` topic
+   from Firebase Console → Messaging → New campaign (target: Topic).
+
+**Triggering a send from WordPress on publish:** see
+[`wordpress-integration/push-on-publish.php`](../wordpress-integration/push-on-publish.php)
+— a dependency-free PHP snippet (raw OpenSSL, no Composer needed) that hooks
+`transition_post_status` and calls the FCM HTTP v1 API. Install it via a
+[Code Snippets](https://wordpress.org/plugins/code-snippets/) plugin on the
+WordPress site (recommended) or the theme's `functions.php`. Needs a Firebase
+**service account** key (Project Settings → Service Accounts → Generate new
+private key) — the file has full setup instructions in its header comment.
+
+**iOS Home Screen widget:** `iosApp/PanoramaWidget/` shows the latest headline,
+refreshed roughly hourly. It fetches directly from the WordPress REST API
+(doesn't need the Firebase setup above) — nothing to configure, it just works
+once you build/run the `iosApp` scheme (the widget extension is embedded and
+built automatically as part of that target).
+
+---
+
 ## 5. Troubleshooting
 
 | Symptom | Fix |

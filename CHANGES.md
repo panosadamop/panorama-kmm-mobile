@@ -5,6 +5,43 @@ behind the key decisions. Newest entries at the top.
 
 ---
 
+## 2026-07-29 — Native capabilities for App Store 4.2 resubmission
+
+Apple rejected the iOS submission under **Guideline 4.2 (Minimum Functionality)**
+("just displays a website"). Added four things to strengthen the resubmission:
+
+- **Offline bookmark image caching** (`data/local/BookmarkImageCache.kt` +
+  `util/BookmarkCacheDir.kt`): bookmarked articles now cache their featured image
+  and every inline content image to a dedicated, OS-non-purgeable directory
+  (Android `filesDir`, iOS Application Support) — not Coil's own evictable
+  50 MB LRU cache, which could silently drop a bookmark's images under
+  storage pressure. `NetworkImage` prefers the cached local copy when present.
+  Wired to sync automatically on every change to `BookmarkStore.bookmarks` via
+  a `LaunchedEffect` in `App.kt`.
+- **Push notifications** (Firebase Cloud Messaging, topic-based — no per-device
+  token database): `PanoramaMessagingService.kt` (Android) + `AppDelegate` in
+  `iOSApp.swift` (iOS), both subscribing to the `new_articles` topic at launch.
+  Both no-op safely without real Firebase config (`google-services.json` /
+  `GoogleService-Info.plist`), matching the existing keystore.properties
+  pattern of "missing config → feature skipped, not a crash". See
+  `wordpress-integration/push-on-publish.php` for the WordPress-side trigger
+  (dependency-free PHP, hand-signs the FCM HTTP v1 JWT via raw OpenSSL since
+  most WP hosting has no Composer access) and RUNNING.md §4.4 for full setup.
+- **iOS Home Screen widget** (`iosApp/PanoramaWidget/`): new WidgetKit
+  extension target showing the latest headline, refreshing hourly. Fetches
+  directly from the WordPress REST API in Swift rather than linking the shared
+  Kotlin/Ktor stack — simpler and safer inside a widget's tight memory/time
+  budget. No configuration needed; builds automatically with `iosApp`.
+- **App Review resubmission note** drafted in `app-previews/app-store-listing.md`
+  for the "Notes" field in App Store Connect.
+
+All changes verified: `:composeApp:assembleDebug`, `compileKotlinIosSimulatorArm64`,
+and a full `xcodebuild` of `iosApp` (with the widget embedded) all succeed; the
+app was installed and launched in the iOS Simulator without crashing both with
+and without real Firebase config present.
+
+---
+
 ## 2026-07-23 — Preview APK (signed, sideloadable)
 
 - Added `build-preview-apk.bat` — one command builds a **signed release APK** and

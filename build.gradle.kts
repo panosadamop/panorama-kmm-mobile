@@ -5,4 +5,6 @@ plugins {
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinxSerialization) apply false
+    // Applied conditionally in composeApp/build.gradle.kts once google-services.json exists.
+    alias(libs.plugins.googleServices) apply false
 }

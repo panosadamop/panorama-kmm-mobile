@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -21,6 +22,7 @@ import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import gr.panoramapolihnitou.app.data.local.BookmarkImageCache
 import gr.panoramapolihnitou.app.di.AppGraph
 import gr.panoramapolihnitou.app.util.imageCacheDir
 
@@ -68,9 +70,17 @@ fun NetworkImage(
         return
     }
 
+    val context = LocalPlatformContext.current
+    // Bookmarked articles' images are proactively cached to a non-purgeable
+    // directory (see BookmarkImageCache) — prefer that copy when present so
+    // bookmarks read correctly offline, online or not.
+    val requestData = remember(url) {
+        BookmarkImageCache.cachedFileOrNull(context, url)?.let { "file://$it" } ?: url
+    }
+
     SubcomposeAsyncImage(
-        model = ImageRequest.Builder(LocalPlatformContext.current)
-            .data(url)
+        model = ImageRequest.Builder(context)
+            .data(requestData)
             .crossfade(true)
             .build(),
         contentDescription = contentDescription,

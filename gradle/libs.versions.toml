@@ -18,6 +18,8 @@ coil = "3.0.4"
 voyager = "1.1.0-beta03"
 multiplatformSettings = "1.2.0"
 playServicesAds = "23.6.0"
+firebaseBom = "33.7.0"
+googleServices = "4.4.2"
 
 [libraries]
 # Coroutines
@@ -52,9 +54,14 @@ multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-s
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
 
+# Firebase (push notifications — see RUNNING.md → "Push notifications" for setup)
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+googleServices = { id = "com.google.gms.google-services", version.ref = "googleServices" }

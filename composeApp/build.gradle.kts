@@ -11,6 +11,14 @@ plugins {
     alias(libs.plugins.kotlinxSerialization)
 }
 
+// Push notifications (see RUNNING.md → "Push notifications"): the google-services
+// plugin fails configuration outright if google-services.json is missing, so it's
+// only applied once you've dropped a real one in here from the Firebase console —
+// mirrors how `keystore.properties` is optional until you're ready to sign releases.
+if (file("google-services.json").exists()) {
+    apply(plugin = libs.plugins.googleServices.get().pluginId)
+}
+
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -73,6 +81,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.play.services.ads)
+            implementation(platform("com.google.firebase:firebase-bom:${libs.versions.firebaseBom.get()}"))
+            implementation(libs.firebase.messaging)
         }
 
         iosMain.dependencies {

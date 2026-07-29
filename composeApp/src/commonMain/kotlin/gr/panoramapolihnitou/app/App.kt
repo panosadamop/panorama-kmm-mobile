@@ -8,6 +8,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,9 +17,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import coil3.compose.LocalPlatformContext
 import androidx.compose.ui.unit.Density
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
+import gr.panoramapolihnitou.app.data.local.BookmarkImageCache
 import gr.panoramapolihnitou.app.data.local.PreferencesStore
 import gr.panoramapolihnitou.app.di.AppGraph
 import gr.panoramapolihnitou.app.ui.SplashScreen
@@ -44,6 +47,13 @@ import kotlinx.coroutines.launch
 fun App(sharer: Sharer = NoopSharer) {
     PanoramaTheme {
         CompositionLocalProvider(LocalSharer provides sharer) {
+            val platformContext = LocalPlatformContext.current
+            LaunchedEffect(Unit) {
+                AppGraph.bookmarkStore.bookmarks.collect { bookmarks ->
+                    BookmarkImageCache.sync(platformContext, bookmarks)
+                }
+            }
+
             val prefs = AppGraph.preferences
             val fontScale by prefs.fontScale.collectAsState()
 
