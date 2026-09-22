@@ -236,7 +236,9 @@ Bump these together for each store submission:
 - **Android:** `composeApp/build.gradle.kts` → `versionCode` (integer, must increase
   every upload) and `versionName` (e.g. `"1.0.1"`).
 - **iOS:** `iosApp/iosApp/Info.plist` → `CFBundleVersion` (build number, must increase)
-  and `CFBundleShortVersionString` (marketing version).
+  and `CFBundleShortVersionString` (marketing version). Copy both values into
+  `iosApp/PanoramaWidget/Info.plist` too — App Store Connect rejects an upload
+  where the widget extension's `CFBundleVersion` doesn't match the app's.
 
 ---
 

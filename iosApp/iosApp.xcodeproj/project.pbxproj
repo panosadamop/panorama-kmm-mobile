@@ -10,6 +10,7 @@
 		1A61502D3019DBAB0036E6C6 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = CF455BFE5015522750CD96DC /* FirebaseMessaging */; };
 		1A61502E3019DBAB0036E6C6 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4641C98511ED84C256DD6AF4 /* FirebaseCore */; };
 		1A615030301A2B2E0036E6C6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A61502F301A2B2E0036E6C6 /* GoogleService-Info.plist */; };
+		D25F2843F1335A2FAB110B97 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3D5A5AFB358F4F3FC9AE3F50 /* PrivacyInfo.xcprivacy */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		5703C966A24E90F786B80B02 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C609B59F5483B139AA9AB1C /* Foundation.framework */; };
 		6C9BF843376B38B4A30A4B02 /* PanoramaWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE821243D8EFC3A973F2130E /* PanoramaWidget.swift */; };
@@ -55,6 +56,7 @@
 /* Begin PBXFileReference section */
 		058557BA273AAA24004C7B11 /* Preview Content */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Content"; sourceTree = "<group>"; };
 		1A61502F301A2B2E0036E6C6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		3D5A5AFB358F4F3FC9AE3F50 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1D6003584A9F8223EE34D5AD /* iosApp.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = iosApp.entitlements; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
 		2AF50D947B22D3CA447E49B2 /* PanoramaWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PanoramaWidgetBundle.swift; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 				7555FF82242A565900829871 /* ContentView.swift */,
 				AB0000000000000000000A55 /* Assets.xcassets */,
 				7555FF8C242A565B00829871 /* Info.plist */,
+				3D5A5AFB358F4F3FC9AE3F50 /* PrivacyInfo.xcprivacy */,
 				058557D7273AAEEB004C7B11 /* Preview Content */,
 				1D6003584A9F8223EE34D5AD /* iosApp.entitlements */,
 			);
@@ -296,6 +299,7 @@
 			files = (
 				AB0000000000000000000B55 /* Assets.xcassets in Resources */,
 				1A615030301A2B2E0036E6C6 /* GoogleService-Info.plist in Resources */,
+				D25F2843F1335A2FAB110B97 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -388,7 +392,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "$(TEAM_ID)";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = gr.panoramapolihnitou.app.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -401,6 +405,7 @@
 		};
 		5C55FBEB6C1FFC58B2A6E415 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB1DB47F26260CA5003100C1 /* Config.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
@@ -468,7 +473,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -523,7 +528,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -595,6 +600,7 @@
 		};
 		A01536EB19CB7AE41409CB52 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB1DB47F26260CA5003100C1 /* Config.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
@@ -619,7 +625,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "$(TEAM_ID)";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = gr.panoramapolihnitou.app.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
