@@ -132,7 +132,7 @@ https://panoramapolihnitou.gr
 ## Privacy Policy URL (required)
 
 ```
-https://panoramapolihnitou.gr/privacy-policy-3/
+https://panoramapolihnitou.gr/privacy-policy-app/
 ```
 **Verify before submitting** that this page is an actual privacy policy
 (data collection/use disclosure), not just Terms of Use — App Review checks

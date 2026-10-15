@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,6 +69,9 @@ import gr.panoramapolihnitou.app.ui.screens.search.SearchScreen
 import gr.panoramapolihnitou.app.ui.theme.PanoramaColors
 import org.jetbrains.compose.resources.painterResource
 
+/** Published from app-previews/privacy-policy/ (see PUBLISHING.md there). */
+private const val PRIVACY_POLICY_URL = "https://panoramapolihnitou.gr/privacy-policy-app/"
+
 private val White35 = Color(0x59FFFFFF)
 private val White30 = Color(0x4DFFFFFF)
 private val White12 = Color(0x1FFFFFFF)
@@ -80,6 +85,7 @@ fun AppDrawer(navigator: Navigator, onClose: () -> Unit) {
     var categories by remember { mutableStateOf<List<Category>>(emptyList()) }
     var loadingCats by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(true) }
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(Unit) {
         runCatching { AppGraph.repository.getCategories() }
@@ -136,6 +142,11 @@ fun AppDrawer(navigator: Navigator, onClose: () -> Unit) {
                 DrawerItem(Icons.Outlined.Info, "Ποιοι Είμαστε") { go(WhoWeAreScreen()) }
                 DrawerItem(Icons.Outlined.MailOutline, "Επικοινωνία") { go(ContactScreen()) }
                 DrawerItem(Icons.AutoMirrored.Outlined.Article, "Όροι Χρήσης") { go(TermsScreen()) }
+                // Both stores require the privacy policy to be reachable from inside the app.
+                DrawerItem(Icons.Outlined.PrivacyTip, "Πολιτική Απορρήτου") {
+                    onClose()
+                    uriHandler.openUri(PRIVACY_POLICY_URL)
+                }
                 Separator()
             }
             // Password-gated contributor area (uploads + live streaming)

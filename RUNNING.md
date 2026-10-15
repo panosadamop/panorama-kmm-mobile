@@ -252,8 +252,8 @@ Bump these together for each store submission:
   - `feature-graphic-1024x500.png`
   - `screenshots/phone/01…05` (5 phone screenshots, 1280×2600)
   - `play-store-listing.md` — every text field + questionnaire answer to paste
-  - `privacy-policy-el.md` — draft policy to publish on the website
-- A **public privacy policy URL** (mandatory). Publish `privacy-policy-el.md` on
+  - privacy policy: `app-previews/privacy-policy/privacy-policy-el.html` (+ `PUBLISHING.md`)
+- A **public privacy policy URL** (mandatory). Publish `app-previews/privacy-policy/privacy-policy-el.html` (see `PUBLISHING.md` there) on
   panoramapolihnitou.gr first; you cannot submit without the URL.
 
 **Recommended: Play App Signing.** Let Google manage the app signing key; you keep only

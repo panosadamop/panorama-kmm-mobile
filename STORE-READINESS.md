@@ -14,7 +14,7 @@ Legend: ✅ done · 🔧 fixed in this change · ⛔ blocker (must do before sub
 
 | # | Store | Item | Why it blocks | What to do |
 |---|---|---|---|---|
-| 1 | Both | **Privacy policy not public** | Both stores reject a submission without a reachable policy URL that matches the app. The current `/privacy-policy-3/` link is unverified. | Publish `app-previews/play-store/privacy-policy-el.md` (updated for 1.1.0: push, camera/mic, uploads, live) on the site, e.g. `/privacy-policy-app/`. Use that URL in both consoles. |
+| 1 | Both | **Privacy policy not public** | Both stores reject a submission without a reachable policy URL that matches the app. The current `/privacy-policy-3/` link is unverified. | Publish `app-previews/privacy-policy/privacy-policy-el.html` (updated for 1.1.0: push, camera/mic, uploads, live) on the site, e.g. `/privacy-policy-app/`. Use that URL in both consoles. |
 | 2 | Android | **`google-services.json` missing** | Without it, push notifications silently do nothing on Android. The build succeeds, but the store listing can't honestly promise push. | Firebase console → project `panorama-polihnitou-notificy` → add the Android app `gr.panoramapolihnitou.app` → download → `composeApp/google-services.json`. |
 | 3 | iOS | **APNs key not confirmed in Firebase** | Without it, iOS push never arrives. | Apple Developer → Keys → APNs key → upload in Firebase → Cloud Messaging. |
 | 4 | Both | **Push has no sender** | Nothing sends a push yet. | Install `wordpress-integration/push-on-publish.php` (now in the repo) and the service-account JSON on the WordPress host. |
