@@ -76,12 +76,19 @@ kotlin {
             implementation(libs.multiplatform.settings.serialization)
         }
 
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.client.mock)
+        }
+
         androidMain.dependencies {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
             implementation(platform("com.google.firebase:firebase-bom:${libs.versions.firebaseBom.get()}"))
             implementation(libs.firebase.messaging)
+            implementation(libs.rootencoder.library)
         }
 
         iosMain.dependencies {
@@ -98,8 +105,8 @@ android {
         applicationId = "gr.panoramapolihnitou.app"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
     }
 
     packaging {

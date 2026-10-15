@@ -1,9 +1,12 @@
 package gr.panoramapolihnitou.app.di
 
 import gr.panoramapolihnitou.app.data.local.BookmarkStore
+import gr.panoramapolihnitou.app.data.local.ContributorSession
 import gr.panoramapolihnitou.app.data.local.PreferencesStore
+import gr.panoramapolihnitou.app.data.remote.ContributorApi
 import gr.panoramapolihnitou.app.data.remote.WordPressApi
 import gr.panoramapolihnitou.app.data.remote.createHttpClient
+import gr.panoramapolihnitou.app.data.remote.createUploadHttpClient
 import gr.panoramapolihnitou.app.data.repository.ContentRepository
 
 /**
@@ -18,4 +21,7 @@ object AppGraph {
     val repository: ContentRepository by lazy { ContentRepository(api) }
     val bookmarkStore: BookmarkStore by lazy { BookmarkStore() }
     val preferences: PreferencesStore by lazy { PreferencesStore() }
+
+    val contributorApi: ContributorApi by lazy { ContributorApi(createUploadHttpClient()) }
+    val contributorSession: ContributorSession by lazy { ContributorSession() }
 }

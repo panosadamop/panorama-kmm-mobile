@@ -55,7 +55,26 @@ fun HttpClientConfig<*>.applySharedConfig() {
 }
 
 /**
+ * Configuration for the contributor uploads client: no WordPress base URL or
+ * response cache, and timeouts long enough to push ~18 MB of photos/audio over
+ * a weak mobile connection.
+ */
+fun HttpClientConfig<*>.applyUploadConfig() {
+    install(ContentNegotiation) {
+        json(ApiJson)
+    }
+    install(HttpTimeout) {
+        requestTimeoutMillis = 5 * 60_000
+        connectTimeoutMillis = 20_000
+        socketTimeoutMillis = 2 * 60_000
+    }
+}
+
+/**
  * Each platform supplies its own engine (OkHttp on Android, Darwin on iOS) but
  * reuses [applySharedConfig]. Implemented in androidMain / iosMain.
  */
 expect fun createHttpClient(): HttpClient
+
+/** Same engines as [createHttpClient], configured with [applyUploadConfig]. */
+expect fun createUploadHttpClient(): HttpClient

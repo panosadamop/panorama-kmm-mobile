@@ -13,17 +13,22 @@ android-targetSdk = "36"
 # Libraries
 androidx-activityCompose = "1.9.3"
 coroutines = "1.9.0"
-ktor = "3.0.3"
+# Kept in line with what RootEncoder (Android live streaming) pulls in transitively.
+ktor = "3.1.1"
 serialization = "1.7.3"
 coil = "3.0.4"
 voyager = "1.1.0-beta03"
 multiplatformSettings = "1.2.0"
 firebaseBom = "33.7.0"
 googleServices = "4.4.2"
+# 2.5.9 is the newest RootEncoder built with Kotlin 2.1 + Ktor 3 — later releases need
+# Kotlin 2.2+ metadata (2.7+) or pull in Ktor 2 (2.6.x), which clashes with ours.
+rootEncoder = "2.5.9"
 
 [libraries]
 # Coroutines
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 
 # Serialization
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
@@ -35,6 +40,7 @@ ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", 
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 
 # Coil (image loading)
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
@@ -56,6 +62,9 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 # Firebase (push notifications — see RUNNING.md → "Push notifications" for setup)
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
+
+# RootEncoder (Android live streaming over RTMP/RTMPS to YouTube)
+rootencoder-library = { module = "com.github.pedroSG94.RootEncoder:library", version.ref = "rootEncoder" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

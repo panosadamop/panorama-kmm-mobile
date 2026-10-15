@@ -32,15 +32,27 @@ displaying the website:
   readable with no connection, e.g. underground or in areas of Lesvos with
   spotty mobile coverage.
 • Category browsing, full-text search, and a native reading experience
-  (dark mode, adjustable text size, native sharing) — none of which route
-  through a web view.
+  (adjustable text size, native sharing) — none of which route through a
+  web view.
+• A contributor area (menu → "Περιοχή συνεργατών") for the newsroom's local
+  correspondents: with an access code issued by the editors they can capture
+  photos, record voice reports and write text, and send them to the newsroom
+  (email or Google Drive), or broadcast live from the camera to our YouTube
+  channel. Nothing they send is published inside the app; the editors review
+  it first. Readers never need an account.
 
-The app reads only public content via the WordPress REST API — no accounts,
-no login, no user-generated content, nothing exempt from standard review.
+Demo access code for review (all features enabled): <REVIEW_CODE>
+Live streaming publishes to our YouTube channel; during review the stream's
+visibility is set to Unlisted, so feel free to test it.
 
 If anything about the native functionality isn't visible during review, happy
 to provide a walkthrough video — please let us know via the resolution center.
 ```
+
+**Before submitting:** create a dedicated code for Apple (e.g. `"apple-review-2026"`
+with roles `["submit","live"]`) in `ACCESS_CODES`, replace `<REVIEW_CODE>` above with it, set the
+YouTube stream visibility to **Unlisted** for the review period, and delete the
+code once the app is approved. Put the same code in Play Console → *App access*.
 
 ---
 

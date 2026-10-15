@@ -19,6 +19,12 @@ import gr.panoramapolihnitou.app.R
  */
 const val NEW_ARTICLES_TOPIC = "new_articles"
 
+/**
+ * FCM data key (and launch-intent extra) holding the WordPress post id; set by
+ * `wordpress-integration/push-on-publish.php`, read by MainActivity.
+ */
+const val EXTRA_POST_ID = "post_id"
+
 /** Matches the manifest's `default_notification_channel_id` meta-data. */
 const val NEW_ARTICLES_CHANNEL_ID = "new_articles"
 
@@ -37,10 +43,13 @@ class PanoramaMessagingService : FirebaseMessagingService() {
         val title = message.notification?.title ?: message.data["title"] ?: return
         val body = message.notification?.body ?: message.data["body"]
 
+        val id = notificationId++
         val intent = Intent(this, MainActivity::class.java)
-            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            .putExtra(EXTRA_POST_ID, message.data[EXTRA_POST_ID])
+        // Distinct request code per notification, or every PendingIntent would share one post id.
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
+            this, id, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -52,7 +61,7 @@ class PanoramaMessagingService : FirebaseMessagingService() {
             .setContentIntent(pendingIntent)
             .build()
 
-        runCatching { NotificationManagerCompat.from(this).notify(notificationId++, notification) }
+        runCatching { NotificationManagerCompat.from(this).notify(id, notification) }
     }
 }
 

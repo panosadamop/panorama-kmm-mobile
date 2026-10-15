@@ -7,3 +7,7 @@ import io.ktor.client.engine.okhttp.OkHttp
 actual fun createHttpClient(): HttpClient = HttpClient(OkHttp) {
     applySharedConfig()
 }
+
+actual fun createUploadHttpClient(): HttpClient = HttpClient(OkHttp) {
+    applyUploadConfig()
+}

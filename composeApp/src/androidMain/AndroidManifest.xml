@@ -4,6 +4,14 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Required to show push notifications on Android 13+ (requested at runtime in MainActivity). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Contributor area: photos (camera), voice reports and live streaming (camera + mic).
+         All requested at runtime, only when a contributor uses the feature. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Not required: keeps the app installable on devices without a camera/mic. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
     <application
         android:name=".PanoramaApplication"
@@ -25,10 +33,22 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="new_articles" />
 
+        <!-- Hands the camera app a file to write photos into (see Media.android.kt). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|colorMode|density|fontScale|fontWeightAdjustment|keyboard|layoutDirection|locale|mcc|navigation|smallestScreenSize|touchscreen|uiMode"
             android:exported="true"
+            android:launchMode="singleTop"
             android:label="@string/app_name"
             android:theme="@style/Theme.Panorama"
             android:windowSoftInputMode="adjustResize">

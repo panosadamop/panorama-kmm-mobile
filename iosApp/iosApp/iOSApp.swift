@@ -1,4 +1,5 @@
 import SwiftUI
+import ComposeApp
 import FirebaseCore
 import FirebaseMessaging
 import UserNotifications
@@ -48,6 +49,22 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         completionHandler([.banner, .sound, .list])
+    }
+
+    // Tapping a "new article" notification opens that article. `post_id` is set by
+    // wordpress-integration/push-on-publish.php; the Kotlin side waits for the splash.
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+        if let postId = userInfo["post_id"] as? String {
+            DeepLinks.shared.openArticle(postId: postId)
+        } else if let postId = userInfo["post_id"] as? NSNumber {
+            DeepLinks.shared.openArticle(postId: postId.stringValue)
+        }
+        completionHandler()
     }
 }
 

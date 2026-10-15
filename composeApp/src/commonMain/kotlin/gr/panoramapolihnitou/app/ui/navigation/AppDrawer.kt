@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -56,6 +57,8 @@ import gr.panoramapolihnitou.app.resources.Res
 import gr.panoramapolihnitou.app.resources.logo
 import gr.panoramapolihnitou.app.ui.screens.articles.ArticleListScreen
 import gr.panoramapolihnitou.app.ui.screens.bookmarks.BookmarksScreen
+import gr.panoramapolihnitou.app.ui.screens.contributor.ContributorHomeScreen
+import gr.panoramapolihnitou.app.ui.screens.contributor.ContributorLoginScreen
 import gr.panoramapolihnitou.app.ui.screens.home.HomeScreen
 import gr.panoramapolihnitou.app.ui.screens.pages.ContactScreen
 import gr.panoramapolihnitou.app.ui.screens.pages.TermsScreen
@@ -133,6 +136,15 @@ fun AppDrawer(navigator: Navigator, onClose: () -> Unit) {
                 DrawerItem(Icons.Outlined.Info, "Ποιοι Είμαστε") { go(WhoWeAreScreen()) }
                 DrawerItem(Icons.Outlined.MailOutline, "Επικοινωνία") { go(ContactScreen()) }
                 DrawerItem(Icons.AutoMirrored.Outlined.Article, "Όροι Χρήσης") { go(TermsScreen()) }
+                Separator()
+            }
+            // Password-gated contributor area (uploads + live streaming)
+            item {
+                SectionLabel("ΣΥΝΕΡΓΑΤΕΣ")
+                DrawerItem(Icons.Outlined.Lock, "Περιοχή συνεργατών") {
+                    val unlocked = AppGraph.contributorSession.current.value != null
+                    go(if (unlocked) ContributorHomeScreen() else ContributorLoginScreen())
+                }
                 Separator()
             }
             // Categories (collapsible)

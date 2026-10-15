@@ -264,10 +264,12 @@ the *upload* key created in §3.2. This is the default when you create the app.
    **Greek (el-GR)**, app/game = App, free.
 2. Complete **Dashboard → Set up your app** using the answers in
    `app-previews/play-store/play-store-listing.md`: privacy policy URL, app
-   access (no login), **ads = No** (the Ads SDK is not linked in 1.0.0), content
-   rating questionnaire, target audience (18+), news-publisher details, and the
-   data safety form (**no data collected**, everything over HTTPS, bookmarks and
-   settings stay on the device).
+   access, **ads = No** (the Ads SDK is not linked), content rating questionnaire,
+   target audience (18+), news-publisher details, and the data safety form.
+   **From 1.1.0 the answers change.** *App access*: "Some functionality is
+   restricted"; give a demo access code. *Data safety*: declare Device or other IDs
+   (FCM, push) plus Photos, Audio and Other user-generated content (contributor
+   area only, optional, encrypted in transit). See `STORE-READINESS.md` §2.
 3. **Main store listing:** paste the short/full description and upload the icon,
    feature graphic and the 5 phone screenshots.
 4. **Release → Testing → Internal testing → Create release.**
@@ -365,7 +367,7 @@ keystore: missing config → feature silently skipped, not a crash).
    from Firebase Console → Messaging → New campaign (target: Topic).
 
 **Triggering a send from WordPress on publish:** see
-[`wordpress-integration/push-on-publish.php`](../wordpress-integration/push-on-publish.php)
+[`wordpress-integration/push-on-publish.php`](./wordpress-integration/push-on-publish.php)
 — a dependency-free PHP snippet (raw OpenSSL, no Composer needed) that hooks
 `transition_post_status` and calls the FCM HTTP v1 API. Install it via a
 [Code Snippets](https://wordpress.org/plugins/code-snippets/) plugin on the
@@ -378,6 +380,48 @@ refreshed roughly hourly. It fetches directly from the WordPress REST API
 (doesn't need the Firebase setup above) — nothing to configure, it just works
 once you build/run the `iosApp` scheme (the widget extension is embedded and
 built automatically as part of that target).
+
+**Tapping a notification opens the article.** The PHP snippet sends the post id
+as `post_id` in the FCM data payload. `MainActivity` (Android) and `AppDelegate`
+(iOS) pass it to `DeepLinks`, and the app fetches and opens the article after
+the splash.
+
+---
+
+## 4.5 Contributor area (password-gated uploads + YouTube live)
+
+Drawer → **ΣΥΝΕΡΓΑΤΕΣ → Περιοχή συνεργατών**. With a valid access code a
+contributor can:
+- send **text + photos (camera or library) + voice recordings** to the newsroom,
+  choosing **Email** (info@panoramapolihnitou.gr) or **Google Drive**;
+- **broadcast live** to the channel's YouTube stream (codes with the `live` role only).
+
+Everything secret lives in a free **Google Apps Script** web app, not in the
+app. The codes are checked server-side, and the stream key is only handed to
+`live` codes.
+
+**Setup:** follow [`backend/apps-script/README.md`](./backend/apps-script/README.md),
+then paste the web-app URL into `ContributorConfig.ENDPOINT_URL`
+(`composeApp/src/commonMain/.../data/remote/ContributorApi.kt`) and rebuild.
+While that constant is empty, the screen says the feature isn't enabled yet.
+
+| Piece | Android | iOS |
+|---|---|---|
+| Camera photo | `TakePicture` + FileProvider (`res/xml/file_paths.xml`) | `UIImagePickerController` |
+| Library | Photo Picker (no storage permission) | `PHPickerViewController` (no permission) |
+| Voice | `MediaRecorder`, AAC 64 kbps mono `.m4a` | `AVAudioRecorder`, same format |
+| Live (RTMPS → YouTube) | RootEncoder 2.5.9 (JitPack) | HaishinKit 1.9.9 (SwiftPM) via `iosApp/iosApp/LiveStreamBridge.swift` |
+
+Photos are downscaled to 2048 px JPEG (metadata, including GPS, is stripped).
+One submission is capped at 18 MB.
+
+**Why RootEncoder 2.5.9 and not newer:** 2.7+ is compiled with Kotlin 2.2–2.4,
+which this project's Kotlin 2.1 can't read, and 2.6.x depends on Ktor 2, which
+clashes with the app's Ktor 3. If you upgrade Kotlin, revisit this pin. Ktor is
+pinned to 3.1.1 to match what RootEncoder brings in.
+
+**iOS note:** the Swift bridge exists because HaishinKit has no Objective-C API.
+HaishinKit is pinned to `1.9.x` (2.x rewrote the API).
 
 ---
 

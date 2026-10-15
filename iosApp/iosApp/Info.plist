@@ -17,9 +17,9 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.0</string>
+	<string>1.1.0</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>3</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
@@ -36,7 +36,7 @@
 	</dict>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
@@ -54,6 +54,12 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Η κάμερα χρησιμοποιείται μόνο όταν εσείς, ως συνεργάτης, τραβάτε φωτογραφία ή κάνετε ζωντανή μετάδοση για το Πανόραμα Πολιχνίτου.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Το μικρόφωνο χρησιμοποιείται μόνο όταν εσείς, ως συνεργάτης, ηχογραφείτε ρεπορτάζ ή κάνετε ζωντανή μετάδοση για το Πανόραμα Πολιχνίτου.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Επιλέγετε φωτογραφίες από τη συλλογή σας για να τις στείλετε στη σύνταξη του Πανοράματος Πολιχνίτου.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 </dict>

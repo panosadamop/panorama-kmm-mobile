@@ -5,6 +5,45 @@ behind the key decisions. Newest entries at the top.
 
 ---
 
+## 2026-10-15 — 1.1.0: contributor area (uploads + YouTube live), push completion, store fixes
+
+**Contributor area** (drawer → ΣΥΝΕΡΓΑΤΕΣ), unlocked with a per-person access code:
+- `ui/screens/contributor/`: login, home, submission (title + text, camera,
+  photo library, voice recording, destination Email/Google Drive) and live
+  broadcast (full-screen camera, LIVE/stop, switch camera, exit confirmation).
+- `data/remote/ContributorApi.kt` + `data/local/ContributorSession.kt`: talks to a
+  **Google Apps Script** web app (`backend/apps-script/`, free). It checks codes,
+  emails or saves to Drive, and hands the YouTube stream key only to `live`
+  codes. No password or key is in the app. Handles Apps Script's POST→302→GET.
+  Separate upload HTTP client with long timeouts (`createUploadHttpClient`).
+- `media/` expect/actual: `rememberImagePicker`, `rememberAudioRecorder`,
+  `LiveCameraPreview`. Android: TakePicture + FileProvider, Photo Picker,
+  MediaRecorder, RootEncoder 2.5.9 (JitPack). iOS: UIImagePickerController,
+  PHPicker, AVAudioRecorder, HaishinKit 1.9.9 via `iosApp/iosApp/LiveStreamBridge.swift`
+  (Swift implements the Kotlin `IosLiveStreamBridge`, passed into `MainViewController`).
+- Photos are downscaled to 2048 px JPEG and stripped of metadata (incl. GPS). Uploads are capped at 18 MB.
+- **Ktor 3.0.3 → 3.1.1** so the app and RootEncoder's ktor-network agree.
+  (Newer RootEncoder needs Kotlin 2.2+ or pulls in Ktor 2; see RUNNING.md §4.5.)
+
+**Push notifications** (already FCM, now complete):
+- Added the missing `wordpress-integration/push-on-publish.php` (the docs referenced it, but it wasn't in the repo).
+- Tapping a notification opens the article (`post_id` → `ui/navigation/DeepLinks.kt`;
+  `MainActivity` is now `singleTop` + `onNewIntent`; iOS `didReceive response`).
+
+**Store fixes:** added the missing `iosApp/iosApp/iosApp.entitlements` (referenced
+by the Xcode project, absent from the repo); `UIRequiredDeviceCapabilities` armv7 → arm64;
+camera/mic/photos usage strings; privacy manifest declares contributor data;
+camera/mic `uses-feature required=false`; versionCode 2 / 1.1.0 (iOS build 3);
+privacy policy and App Review notes updated (also dropped a false "dark mode" claim).
+Full evaluation: `STORE-READINESS.md`.
+
+**Verified:** Android `assembleDebug` ✅; `ContributorApiTest` 5/5 ✅; backend logic
+against stubbed Google services ✅; emulator walk-through of all new screens ✅.
+**Not verified:** iOS compile (needs a Mac), a real upload/broadcast (needs the
+deployed backend), the PHP snippet (needs the WordPress host).
+
+---
+
 ## 2026-07-29 — AdMob fully removed
 
 Not a re-disable — deleted outright: `ui/ads/` (`BannerAd.kt` + Android/iOS

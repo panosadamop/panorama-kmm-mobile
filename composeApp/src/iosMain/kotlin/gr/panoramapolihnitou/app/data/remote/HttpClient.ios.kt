@@ -7,3 +7,7 @@ import io.ktor.client.engine.darwin.Darwin
 actual fun createHttpClient(): HttpClient = HttpClient(Darwin) {
     applySharedConfig()
 }
+
+actual fun createUploadHttpClient(): HttpClient = HttpClient(Darwin) {
+    applyUploadConfig()
+}

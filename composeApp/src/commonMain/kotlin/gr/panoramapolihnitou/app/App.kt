@@ -26,8 +26,10 @@ import gr.panoramapolihnitou.app.data.local.PreferencesStore
 import gr.panoramapolihnitou.app.di.AppGraph
 import gr.panoramapolihnitou.app.ui.SplashScreen
 import gr.panoramapolihnitou.app.ui.navigation.AppDrawer
+import gr.panoramapolihnitou.app.ui.navigation.DeepLinks
 import gr.panoramapolihnitou.app.ui.navigation.DrawerController
 import gr.panoramapolihnitou.app.ui.navigation.LocalDrawerController
+import gr.panoramapolihnitou.app.ui.screens.detail.ArticleDetailScreen
 import gr.panoramapolihnitou.app.ui.screens.home.HomeScreen
 import gr.panoramapolihnitou.app.ui.theme.FontScaleController
 import gr.panoramapolihnitou.app.ui.theme.LocalFontScaleController
@@ -94,6 +96,14 @@ private fun RootNavigation() {
                 open = { scope.launch { drawerState.open() } },
                 close = { scope.launch { drawerState.close() } }
             )
+        }
+        // A tapped push notification carries the post id; open that article.
+        val pendingArticleId by DeepLinks.pendingArticleId.collectAsState()
+        LaunchedEffect(pendingArticleId) {
+            val id = pendingArticleId ?: return@LaunchedEffect
+            DeepLinks.consume()
+            runCatching { AppGraph.repository.getArticle(id) }
+                .onSuccess { navigator.push(ArticleDetailScreen(it)) }
         }
         ModalNavigationDrawer(
             drawerState = drawerState,

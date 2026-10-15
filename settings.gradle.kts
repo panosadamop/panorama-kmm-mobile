@@ -26,6 +26,11 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        // RootEncoder (Android RTMP live streaming) is only published on JitPack;
+        // scoped so nothing else can resolve from there.
+        maven("https://jitpack.io") {
+            mavenContent { includeGroupAndSubgroups("com.github.pedroSG94") }
+        }
     }
 }
 
