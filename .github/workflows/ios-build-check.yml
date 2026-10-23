@@ -1,0 +1,64 @@
+name: iOS build check
+
+# Unsigned device build: catches Kotlin/Native and Swift compile errors without
+# any signing secrets. The signed upload lives in ios-testflight.yml.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["**"]
+    paths:
+      - "composeApp/**"
+      - "iosApp/**"
+      - "gradle/**"
+      - "*.gradle.kts"
+      - ".github/workflows/ios-build-check.yml"
+
+concurrency:
+  group: ios-build-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      # Gitignored but listed in the Resources phase; any valid plist compiles.
+      - name: Placeholder GoogleService-Info.plist
+        run: |
+          plutil -create xml1 iosApp/iosApp/GoogleService-Info.plist
+
+      - name: xcodebuild (unsigned, generic iOS device)
+        working-directory: iosApp
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project iosApp.xcodeproj -scheme iosApp -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            2>&1 | tee "$RUNNER_TEMP/xcodebuild.log" | grep -E "error:|warning: .*deprecated|BUILD (SUCCEEDED|FAILED)|^e: " || true
+          grep -q "BUILD SUCCEEDED" "$RUNNER_TEMP/xcodebuild.log"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: xcodebuild-log
+          path: ${{ runner.temp }}/xcodebuild.log
