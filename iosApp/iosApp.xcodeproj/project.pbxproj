@@ -17,6 +17,7 @@
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 		A1B2C3D4E5F6071829304A5C /* LiveStreamBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6071829304A5B /* LiveStreamBridge.swift */; };
 		A1B2C3D4E5F6071829304A5F /* HaishinKit in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F6071829304A5E /* HaishinKit */; };
+		A1B2C3D4E5F6071829304A61 /* RTMPHaishinKit in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F6071829304A60 /* RTMPHaishinKit */; };
 		85F50DF3B85AD3FC216C6F5D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C609B59F5483B139AA9AB1C /* Foundation.framework */; };
 		AB0000000000000000000B55 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB0000000000000000000A55 /* Assets.xcassets */; };
 		C255EE2A7D4DA082A95EA21B /* ScreenshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE78B9D01FAD8CF8DEB4387F /* ScreenshotUITests.swift */; };
@@ -84,6 +85,7 @@
 				1A61502E3019DBAB0036E6C6 /* FirebaseCore in Frameworks */,
 				1A61502D3019DBAB0036E6C6 /* FirebaseMessaging in Frameworks */,
 				A1B2C3D4E5F6071829304A5F /* HaishinKit in Frameworks */,
+				A1B2C3D4E5F6071829304A61 /* RTMPHaishinKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,6 +237,7 @@
 				CF455BFE5015522750CD96DC /* FirebaseMessaging */,
 				4641C98511ED84C256DD6AF4 /* FirebaseCore */,
 				A1B2C3D4E5F6071829304A5E /* HaishinKit */,
+				A1B2C3D4E5F6071829304A60 /* RTMPHaishinKit */,
 			);
 			productName = iosApp;
 			productReference = 7555FF7B242A565900829871 /* Panorama.app */;
@@ -696,7 +699,7 @@
 			repositoryURL = "https://github.com/HaishinKit/HaishinKit.swift";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 1.9.9;
+				minimumVersion = 2.2.5;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -716,6 +719,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A1B2C3D4E5F6071829304A5D /* XCRemoteSwiftPackageReference "HaishinKit.swift" */;
 			productName = HaishinKit;
+		};
+		A1B2C3D4E5F6071829304A60 /* RTMPHaishinKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F6071829304A5D /* XCRemoteSwiftPackageReference "HaishinKit.swift" */;
+			productName = RTMPHaishinKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

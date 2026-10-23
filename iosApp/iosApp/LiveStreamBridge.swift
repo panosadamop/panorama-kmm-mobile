@@ -1,26 +1,37 @@
 import AVFoundation
 import ComposeApp
 import HaishinKit
+import RTMPHaishinKit
 import UIKit
 
 /// Implements the Kotlin `IosLiveStreamBridge`
-/// (composeApp/src/iosMain/.../media/LiveBroadcast.ios.kt) with HaishinKit 1.9,
+/// (composeApp/src/iosMain/.../media/LiveBroadcast.ios.kt) with HaishinKit 2.2,
 /// which is Swift-only and so can't be called from Kotlin directly. Publishes the
 /// camera + microphone over RTMP(S) to the YouTube ingest URL and stream key the
 /// backend hands to contributors with the `live` role.
+///
+/// Kotlin calls in on the main thread. HaishinKit 2's mixer, connection and stream
+/// are actors, so every operation on them goes through [enqueue] and runs strictly
+/// in call order — e.g. a quick close → reopen of the screen can't attach the
+/// camera before the previous detach finished. State the UI reads (`isPublishing`)
+/// is only touched on the main thread.
 final class HaishinKitLiveStreamBridge: NSObject, IosLiveStreamBridge {
 
+    private let mixer = MediaMixer()
     private let connection = RTMPConnection()
     private lazy var stream = RTMPStream(connection: connection)
     private var listener: IosLiveStreamListener?
     private var position: AVCaptureDevice.Position = .back
-    private var streamKey: String?
+    private var previewView: MTHKView?
     private var isPublishing = false
+    private var statusTask: Task<Void, Never>?
+    private var pending: Task<Void, Never>?
 
     func makePreviewView() -> UIView {
         let view = MTHKView(frame: .zero)
         view.videoGravity = .resizeAspectFill
-        view.attachStream(stream)
+        previewView = view
+        enqueue { [mixer] in await mixer.addOutput(view) }
         return view
     }
 
@@ -40,12 +51,24 @@ final class HaishinKitLiveStreamBridge: NSObject, IosLiveStreamBridge {
     func startStream(url: String, streamKey: String) {
         guard !isPublishing else { return }
         isPublishing = true
-        self.streamKey = streamKey
         UIApplication.shared.isIdleTimerDisabled = true
         emit("connecting", reason: nil)
-        connection.addEventListener(.rtmpStatus, selector: #selector(rtmpStatusHandler(_:)), observer: self)
-        connection.addEventListener(.ioError, selector: #selector(rtmpErrorHandler(_:)), observer: self)
-        connection.connect(url)
+        watchConnection()
+        enqueue { [connection, stream, weak self] in
+            do {
+                _ = try await connection.connect(url)
+                _ = try await stream.publish(streamKey)
+                await MainActor.run {
+                    guard self?.isPublishing == true else { return }
+                    self?.emit("live", reason: nil)
+                }
+            } catch RTMPStream.Error.requestFailed(let response)
+                where response.status?.code == RTMPStream.Code.publishBadName.rawValue {
+                await self?.fail("rejected")
+            } catch {
+                await self?.fail("connect")
+            }
+        }
     }
 
     func stopStream() {
@@ -56,14 +79,22 @@ final class HaishinKitLiveStreamBridge: NSObject, IosLiveStreamBridge {
 
     func switchCamera() {
         position = position == .back ? .front : .back
-        stream.attachCamera(AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position))
+        let camera = Self.camera(at: position)
+        enqueue { [mixer] in try? await mixer.attachVideo(camera) }
     }
 
     func detach() {
         if isPublishing { tearDownConnection() }
-        stream.attachCamera(nil)
-        stream.attachAudio(nil)
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        let view = previewView
+        previewView = nil
+        enqueue { [mixer, stream] in
+            await mixer.stopRunning()
+            try? await mixer.attachVideo(nil)
+            try? await mixer.attachAudio(nil)
+            await mixer.removeOutput(stream)
+            if let view { await mixer.removeOutput(view) }
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        }
     }
 
     func bindListener(listener: IosLiveStreamListener?) {
@@ -77,38 +108,59 @@ final class HaishinKitLiveStreamBridge: NSObject, IosLiveStreamBridge {
         try? session.setCategory(.playAndRecord, mode: .videoRecording, options: [.defaultToSpeaker])
         try? session.setActive(true)
 
-        // 720p portrait at 2.5 Mbps: inside YouTube's 720p30 range and gentle on 4G uplinks.
-        stream.sessionPreset = .hd1280x720
-        stream.frameRate = 30
-        stream.videoOrientation = .portrait
-        stream.videoSettings = VideoCodecSettings(
-            videoSize: CGSize(width: 720, height: 1280),
-            bitRate: 2_500_000
-        )
-        stream.attachAudio(AVCaptureDevice.default(for: .audio))
-        stream.attachCamera(AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position))
+        let camera = Self.camera(at: position)
+        enqueue { [mixer, stream] in
+            await mixer.setSessionPreset(.hd1280x720)
+            await mixer.setVideoOrientation(.portrait)
+            try? await mixer.attachAudio(AVCaptureDevice.default(for: .audio))
+            try? await mixer.attachVideo(camera)
+            try? await mixer.setFrameRate(30)
+            // 720p portrait at 2.5 Mbps: inside YouTube's 720p30 range and gentle on 4G uplinks.
+            try? await stream.setVideoSettings(VideoCodecSettings(
+                videoSize: CGSize(width: 720, height: 1280),
+                bitRate: 2_500_000,
+                expectedFrameRate: 30
+            ))
+            await mixer.addOutput(stream)
+            await mixer.startRunning()
+        }
     }
 
-    private func requestAccess(for mediaType: AVMediaType, completion: @escaping (Bool) -> Void) {
-        AVCaptureDevice.requestAccess(for: mediaType) { granted in
-            DispatchQueue.main.async { completion(granted) }
+    /// A drop after going live arrives as `NetConnection.Connect.Closed`; our own
+    /// close produces the same code, but by then `isPublishing` is already false.
+    private func watchConnection() {
+        statusTask?.cancel()
+        statusTask = Task { [connection, weak self] in
+            for await status in await connection.status
+                where status.code == RTMPConnection.Code.connectClosed.rawValue {
+                await self?.fail("closed")
+            }
         }
     }
 
     private func tearDownConnection() {
         isPublishing = false
-        connection.removeEventListener(.rtmpStatus, selector: #selector(rtmpStatusHandler(_:)), observer: self)
-        connection.removeEventListener(.ioError, selector: #selector(rtmpErrorHandler(_:)), observer: self)
-        stream.close()
-        connection.close()
+        statusTask?.cancel()
+        statusTask = nil
         UIApplication.shared.isIdleTimerDisabled = false
+        enqueue { [connection, stream] in
+            _ = try? await stream.close()
+            try? await connection.close()
+        }
     }
 
+    @MainActor
     private func fail(_ reason: String) {
-        DispatchQueue.main.async {
-            guard self.isPublishing else { return }
-            self.tearDownConnection()
-            self.emit("error", reason: reason)
+        guard isPublishing else { return }
+        tearDownConnection()
+        emit("error", reason: reason)
+    }
+
+    private func enqueue(_ operation: @escaping () async -> Void) {
+        let previous = pending
+        pending = Task {
+            await previous?.value
+            await operation()
         }
     }
 
@@ -118,27 +170,13 @@ final class HaishinKitLiveStreamBridge: NSObject, IosLiveStreamBridge {
         }
     }
 
-    @objc private func rtmpStatusHandler(_ notification: Notification) {
-        let event = Event.from(notification)
-        guard let data = event.data as? ASObject, let code = data["code"] as? String else { return }
-        switch code {
-        case RTMPConnection.Code.connectSuccess.rawValue:
-            stream.publish(streamKey)
-        case RTMPStream.Code.publishStart.rawValue:
-            emit("live", reason: nil)
-        case RTMPStream.Code.publishBadName.rawValue:
-            fail("rejected")
-        case RTMPConnection.Code.connectFailed.rawValue,
-             RTMPConnection.Code.connectRejected.rawValue:
-            fail("connect")
-        case RTMPConnection.Code.connectClosed.rawValue:
-            fail("closed")
-        default:
-            break
+    private func requestAccess(for mediaType: AVMediaType, completion: @escaping (Bool) -> Void) {
+        AVCaptureDevice.requestAccess(for: mediaType) { granted in
+            DispatchQueue.main.async { completion(granted) }
         }
     }
 
-    @objc private func rtmpErrorHandler(_ notification: Notification) {
-        fail("connect")
+    private static func camera(at position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+        AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position)
     }
 }

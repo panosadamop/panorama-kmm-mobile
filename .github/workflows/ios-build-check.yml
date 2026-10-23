@@ -55,7 +55,11 @@ jobs:
             -skipMacroValidation \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
             2>&1 | tee "$RUNNER_TEMP/xcodebuild.log" | grep -E "error:|warning: .*deprecated|BUILD (SUCCEEDED|FAILED)|^e: " || true
-          grep -q "BUILD SUCCEEDED" "$RUNNER_TEMP/xcodebuild.log"
+          grep -q "BUILD SUCCEEDED" "$RUNNER_TEMP/xcodebuild.log" || {
+            # Swift errors, Kotlin (e:) errors, Gradle failures and compiler crashes.
+            grep -nE "error: |^e: |What went wrong|Error! |Stack dump:" -A4 "$RUNNER_TEMP/xcodebuild.log" | cut -c1-400 | head -150
+            exit 1
+          }
 
       - uses: actions/upload-artifact@v4
         if: always()
