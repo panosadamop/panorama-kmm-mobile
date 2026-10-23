@@ -134,8 +134,45 @@ function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
-/** Run once from the editor to grant Drive + Gmail permissions before deploying. */
-function authorize() {
-  DriveApp.getRootFolder();
-  MailApp.getRemainingDailyQuota();
+/**
+ * Run once from the editor (▶ Run → setup). Grants the Drive + Gmail permissions
+ * the web app needs, creates the submissions folder and a first access code if
+ * they don't exist yet, and prints what is configured. Safe to re-run: it never
+ * overwrites existing properties.
+ */
+function setup() {
+  var props = PropertiesService.getScriptProperties();
+  MailApp.getRemainingDailyQuota(); // triggers the Gmail permission prompt
+
+  var folderId = props.getProperty('DRIVE_FOLDER_ID');
+  if (!folderId) {
+    folderId = DriveApp.createFolder('Πανόραμα Πολιχνίτου — Υλικό συνεργατών').getId();
+    props.setProperty('DRIVE_FOLDER_ID', folderId);
+  }
+
+  if (!props.getProperty('ACCESS_CODES')) {
+    var codes = {};
+    codes[randomCode_()] = { name: 'Δοκιμή', roles: ['submit', 'live'] };
+    props.setProperty('ACCESS_CODES', JSON.stringify(codes));
+  }
+
+  var configured = JSON.parse(props.getProperty('ACCESS_CODES'));
+  console.log('Drive folder: https://drive.google.com/drive/folders/' + folderId);
+  console.log('Mail to: ' + (props.getProperty('MAIL_TO') || DEFAULT_MAIL_TO));
+  console.log('YouTube stream key set: ' + (props.getProperty('YOUTUBE_STREAM_KEY') ? 'yes' : 'NO — add YOUTUBE_STREAM_KEY'));
+  Object.keys(configured).forEach(function (code) {
+    console.log('Access code: ' + code + '  →  ' + configured[code].name + ' ' + JSON.stringify(configured[code].roles));
+  });
+}
+
+/** 12 random characters as xxxx-xxxx-xxxx (≈62 bits). */
+function randomCode_() {
+  var hex = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+  var alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var out = '';
+  for (var i = 0; i < 12; i++) {
+    out += alphabet[parseInt(hex.substr(i * 2, 2), 16) % alphabet.length];
+    if (i === 3 || i === 7) out += '-';
+  }
+  return out;
 }

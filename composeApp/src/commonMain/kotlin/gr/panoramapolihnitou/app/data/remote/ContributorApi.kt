@@ -26,7 +26,8 @@ object ContributorConfig {
      * Left empty, the contributor screens explain the feature isn't set up yet
      * instead of failing (same "missing config → skipped" pattern as Firebase).
      */
-    const val ENDPOINT_URL = ""
+    const val ENDPOINT_URL =
+        "https://script.google.com/macros/s/AKfycbyQW7EvzSLB7SV-kel9mfBjUySBMBHvc7zCUfQTI3SExvZsBbcvengXB4hLQVBhV61bkQ/exec"
 
     /** Shown in the destination picker; the script's MAIL_TO property is what's actually used. */
     const val MAIL_TO = "info@panoramapolihnitou.gr"

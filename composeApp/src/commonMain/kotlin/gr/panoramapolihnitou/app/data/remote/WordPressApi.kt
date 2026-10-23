@@ -14,6 +14,7 @@ class WordPressApi(private val client: HttpClient) {
     /**
      * Latest posts, newest first. [categoryId] filters by a single category;
      * [categoryIds] filters by a comma-separated set (used by the home sections);
+     * [excludeCategoryIds] drops posts in any of a comma-separated set;
      * [search] is an optional full-text filter.
      */
     suspend fun getPosts(
@@ -21,6 +22,7 @@ class WordPressApi(private val client: HttpClient) {
         perPage: Int = 10,
         categoryId: Long? = null,
         categoryIds: String? = null,
+        excludeCategoryIds: String? = null,
         search: String? = null
     ): List<PostDto> = client.get("posts") {
         parameter("_embed", "1")
@@ -30,14 +32,8 @@ class WordPressApi(private val client: HttpClient) {
         parameter("order", "desc")
         categoryId?.let { parameter("categories", it) }
         categoryIds?.takeIf { it.isNotBlank() }?.let { parameter("categories", it) }
+        excludeCategoryIds?.takeIf { it.isNotBlank() }?.let { parameter("categories_exclude", it) }
         search?.takeIf { it.isNotBlank() }?.let { parameter("search", it) }
-    }.body()
-
-    /** Sticky (featured) posts for the home slider; falls back handled by repository. */
-    suspend fun getStickyPosts(perPage: Int = 5): List<PostDto> = client.get("posts") {
-        parameter("_embed", "1")
-        parameter("sticky", "true")
-        parameter("per_page", perPage)
     }.body()
 
     suspend fun getPost(id: Long): PostDto = client.get("posts/$id") {

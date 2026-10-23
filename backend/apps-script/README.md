@@ -12,7 +12,25 @@ the destination mailbox and the YouTube stream key. The app contains none of the
 | Send → Google Drive | Creates `<date> — <name> — <title>/` in `DRIVE_FOLDER_ID` with `κείμενο.txt` + the files |
 | Live broadcast | Returns the YouTube ingest URL + stream key, only for codes with the `live` role |
 
-## One-time setup (≈15 minutes)
+## Current deployment
+
+| | |
+|---|---|
+| Owner account | `panoramapolihnitou@gmail.com` |
+| Script | https://script.google.com/d/1we8HWR6gQ1kkPu_jWlbzge8I2yLMWUjBaIfCIYGlKEKlz7XrmBtJ9Eh4/edit |
+| Deployment id | `AKfycbyQW7EvzSLB7SV-kel9mfBjUySBMBHvc7zCUfQTI3SExvZsBbcvengXB4hLQVBhV61bkQ` (already in `ContributorConfig.ENDPOINT_URL`) |
+
+**Ship a code change without changing the app's URL** (from this folder, signed in
+with `npx @google/clasp@3.4.1 login`):
+```
+npx @google/clasp@3.4.1 push --force
+npx @google/clasp@3.4.1 update-deployment AKfycbyQW7EvzSLB7SV-kel9mfBjUySBMBHvc7zCUfQTI3SExvZsBbcvengXB4hLQVBhV61bkQ
+```
+`.clasp.json` (script id) is committed for this; your credentials live in
+`~/.clasprc.json`, never in the repo. In the editor, run **`setup`** once: it grants
+permissions, creates the Drive folder and a first access code, and prints them.
+
+## Manual setup (alternative to clasp, ≈15 minutes)
 
 1. Sign in to the Google account that should **own** the submissions (ideally
    the newsroom's account, not a personal one). Go to <https://script.google.com>
@@ -43,7 +61,7 @@ the destination mailbox and the YouTube stream key. The app contains none of the
      password manager. To revoke a code, delete its line. The device is signed
      out on its next action.
    - If you'd rather have one shared password for everyone, use a single entry.
-5. In the editor, pick the function **`authorize`** and press **Run**. Accept the
+5. In the editor, pick the function **`setup`** and press **Run**. Accept the
    Drive + Gmail permission prompts. (Google warns that the app is unverified.
    That's expected for your own script: *Advanced → Go to Panorama contributors*.)
 6. **Deploy → New deployment → Web app**:

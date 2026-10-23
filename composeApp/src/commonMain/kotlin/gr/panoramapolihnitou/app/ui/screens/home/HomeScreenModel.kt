@@ -64,7 +64,7 @@ class HomeScreenModel(
             runCatching {
                 val featured = async { repository.getFeatured(limit = 6) }
                 val important = async { repository.getImportant(limit = 4) }
-                val latest = async { repository.getPosts(page = 1, perPage = pageSize) }
+                val latest = async { repository.getHomeLatest(page = 1, perPage = pageSize) }
                 HomeData(featured.await(), important.await(), latest.await())
             }.onSuccess {
                 _endReached.value = it.latest.size < pageSize
@@ -84,7 +84,7 @@ class HomeScreenModel(
         _loadingMore.value = true
         latestPage += 1
         screenModelScope.launch {
-            runCatching { repository.getPosts(page = latestPage, perPage = pageSize) }
+            runCatching { repository.getHomeLatest(page = latestPage, perPage = pageSize) }
                 .onSuccess { more ->
                     _endReached.value = more.size < pageSize
                     // De-dupe in case of overlap between pages.
