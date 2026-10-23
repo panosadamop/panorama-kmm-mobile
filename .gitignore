@@ -29,3 +29,7 @@ composeApp/build/xcode-frameworks/
 
 # Misc
 *.log
+
+iosApp/fastlane/report.xml
+iosApp/fastlane/README.md
+iosApp/vendor/

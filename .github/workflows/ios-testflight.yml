@@ -1,0 +1,67 @@
+name: iOS → TestFlight
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    runs-on: macos-26
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: iosApp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      # The "Compile Kotlin Framework" build phase runs Gradle from inside Xcode.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: iosApp
+
+      - name: Write secrets to disk
+        env:
+          GOOGLE_SERVICE_INFO_PLIST_B64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_B64 }}
+          DIST_CERT_P12_B64: ${{ secrets.DIST_CERT_P12_B64 }}
+        run: |
+          echo "$GOOGLE_SERVICE_INFO_PLIST_B64" | base64 --decode > iosApp/GoogleService-Info.plist
+          echo "$DIST_CERT_P12_B64" | base64 --decode > "$RUNNER_TEMP/dist.p12"
+
+      - name: Build and upload
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          DIST_CERT_P12_PATH: ${{ runner.temp }}/dist.p12
+          DIST_CERT_PASSWORD: ${{ secrets.DIST_CERT_PASSWORD }}
+        run: bundle exec fastlane beta
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-build
+          path: |
+            iosApp/build/*.ipa
+            ~/Library/Logs/gym/*.log
+          if-no-files-found: ignore

@@ -1,0 +1,79 @@
+# Builds the iOS app on CI and uploads it to TestFlight. Run by
+# .github/workflows/ios-testflight.yml; see RUNNING.md §4.2 for the secrets.
+#
+# Signing is manual on CI only: Xcode's automatic signing needs a development
+# certificate CI doesn't have, so the lane imports the Apple Distribution
+# certificate, fetches App Store profiles with the API key and switches the two
+# signed targets to them. Nothing here is committed back; local Xcode builds keep
+# automatic signing.
+
+default_platform(:ios)
+
+APP_ID = "gr.panoramapolihnitou.app"
+WIDGET_ID = "#{APP_ID}.widget"
+PROJECT = "iosApp.xcodeproj"
+
+platform :ios do
+  desc "Build, sign and upload to TestFlight"
+  lane :beta do
+    app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: ENV.fetch("ASC_KEY_P8"),
+      in_house: false
+    )
+
+    setup_ci
+    import_certificate(
+      certificate_path: ENV.fetch("DIST_CERT_P12_PATH"),
+      certificate_password: ENV.fetch("DIST_CERT_PASSWORD"),
+      keychain_name: "fastlane_tmp_keychain",
+      keychain_password: ""
+    )
+
+    ensure_bundle_id(APP_ID, "Panorama Polihnitou", push: true)
+    ensure_bundle_id(WIDGET_ID, "Panorama Polihnitou Widget")
+
+    profiles = {}
+    { "iosApp" => APP_ID, "PanoramaWidget" => WIDGET_ID }.each do |target, id|
+      get_provisioning_profile(app_identifier: id)
+      profiles[id] = lane_context[SharedValues::SIGH_NAME]
+      update_code_signing_settings(
+        path: PROJECT,
+        targets: [target],
+        use_automatic_signing: false,
+        code_sign_identity: "Apple Distribution",
+        profile_name: profiles[id],
+        team_id: CredentialsManager::AppfileConfig.try_fetch_value(:team_id)
+      )
+    end
+
+    build_number = latest_testflight_build_number(app_identifier: APP_ID, initial_build_number: 3) + 1
+
+    build_app(
+      project: PROJECT,
+      scheme: "iosApp",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: { provisioningProfiles: profiles },
+      xcargs: "CURRENT_PROJECT_VERSION=#{build_number} -skipMacroValidation",
+      output_directory: "build",
+      output_name: "Panorama.ipa"
+    )
+
+    upload_to_testflight(skip_waiting_for_build_processing: true)
+  end
+
+  # Registers the App ID if it doesn't exist yet (the widget's may not) and
+  # enables Push, which the App Store profile must carry for aps-environment.
+  def ensure_bundle_id(identifier, name, push: false)
+    bundle_id = Spaceship::ConnectAPI::BundleId.find(identifier) ||
+      Spaceship::ConnectAPI::BundleId.create(name: name, platform: "IOS", identifier: identifier)
+    return unless push
+
+    push_type = Spaceship::ConnectAPI::BundleIdCapability::Type::PUSH_NOTIFICATIONS
+    unless bundle_id.get_capabilities.any? { |c| c.capability_type == push_type }
+      bundle_id.create_capability(push_type)
+    end
+  end
+end

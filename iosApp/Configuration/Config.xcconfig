@@ -3,3 +3,9 @@
 TEAM_ID=TZK3Q79LH9
 BUNDLE_ID=gr.panoramapolihnitou.app
 APP_NAME=Panorama
+
+// Single source of truth for the app AND the widget extension: App Store Connect
+// rejects an upload whose extension version differs from the app's. CI overrides
+// CURRENT_PROJECT_VERSION with the next free TestFlight build number.
+MARKETING_VERSION=1.1.0
+CURRENT_PROJECT_VERSION=3
