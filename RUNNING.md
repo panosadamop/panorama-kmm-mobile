@@ -283,8 +283,20 @@ the *upload* key created in §3.2. This is the default when you create the app.
 > **Every later upload** needs a higher `versionCode` in
 > `composeApp/build.gradle.kts` (§4.0). Google rejects a repeat of `versionCode 1`.
 
-**CLI alternative (CI):** use [`fastlane supply`](https://docs.fastlane.tools/actions/supply/)
-or the Google Play Developer API with a service account to upload AABs automatically.
+**CI (no Mac needed) — GitHub Actions → TestFlight:** `.github/workflows/ios-testflight.yml` runs
+`iosApp/fastlane/Fastfile` (lane `beta`) on a GitHub macOS runner.
+1. App Store Connect → Users and Access → Integrations → **Team Keys** → generate a key with
+   **Admin** access (needed to create the certificate, App IDs and profiles). Download the `.p8`
+   (once only) and note the Key ID and Issuer ID.
+2. `pip install cryptography pyjwt requests`, then
+   `python iosApp/fastlane/setup_signing.py AuthKey_XXXX.p8 <key id> <issuer id> <backup dir>`.
+   It creates an Apple Distribution certificate, backs up the `.p12` + password, and sets the six
+   repo secrets (`ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8`, `DIST_CERT_P12_B64`,
+   `DIST_CERT_PASSWORD`, `GOOGLE_SERVICE_INFO_PLIST_B64`). Re-run when the certificate expires (1 year).
+3. Trigger: push a tag (`git tag ios-1.1.0-1 && git push origin ios-1.1.0-1`) or, once the
+   workflow is on `main`, `gh workflow run ios-testflight.yml`.
+4. The build number is picked automatically (latest TestFlight build + 1). Bump
+   `MARKETING_VERSION` in `iosApp/Configuration/Config.xcconfig` for a new version.
 
 ---
 
@@ -311,8 +323,21 @@ or the Google Play Developer API with a service account to upload AABs automatic
 6. Attach the uploaded build to the version, submit for **App Review**. Approval
    typically takes ~24–48h; then release manually or automatically.
 
-**CLI alternative (CI):** [`fastlane deliver`](https://docs.fastlane.tools/actions/deliver/)
-or `xcrun altool`/`notarytool` for uploads.
+**CI (no Mac needed): GitHub Actions → TestFlight.** `.github/workflows/ios-testflight.yml`
+runs `iosApp/fastlane/Fastfile` (lane `beta`) on a GitHub macOS runner.
+1. App Store Connect → Users and Access → Integrations → **Team Keys** → generate a key with
+   **Admin** access (needed to create the certificate, App IDs and profiles). Download the
+   `.p8` (only possible once) and note the Key ID and Issuer ID.
+2. `pip install cryptography pyjwt requests`, then
+   `python iosApp/fastlane/setup_signing.py AuthKey_XXXX.p8 <key id> <issuer id> <backup dir>`.
+   It creates an Apple Distribution certificate, backs up the `.p12` + password, and sets the
+   six repo secrets (`ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8`, `DIST_CERT_P12_B64`,
+   `DIST_CERT_PASSWORD`, `GOOGLE_SERVICE_INFO_PLIST_B64`). Re-run when the certificate
+   expires (1 year).
+3. Trigger: push a tag (`git tag ios-1.1.0-1 && git push origin ios-1.1.0-1`) or, once the
+   workflow is on `main`, `gh workflow run ios-testflight.yml`.
+4. The build number is chosen automatically (latest TestFlight build + 1). For a new version,
+   bump `MARKETING_VERSION` in `iosApp/Configuration/Config.xcconfig` (app + widget share it).
 
 ---
 

@@ -2,6 +2,9 @@ name: iOS → TestFlight
 
 on:
   workflow_dispatch:
+  # workflow_dispatch only works once this file is on main; a tag runs it from any branch.
+  push:
+    tags: ["ios-*"]
 
 concurrency:
   group: ios-testflight
