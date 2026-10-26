@@ -18,8 +18,8 @@ Legend: ✅ done · 🔧 fixed in this change · ⛔ blocker (must do before sub
 | 2 | Android | **`google-services.json` missing** | Without it, push notifications silently do nothing on Android. The build succeeds, but the store listing can't honestly promise push. | Firebase console → project `panorama-polihnitou-notificy` → add the Android app `gr.panoramapolihnitou.app` → download → `composeApp/google-services.json`. |
 | 3 | iOS | **APNs key not confirmed in Firebase** | Without it, iOS push never arrives. | Apple Developer → Keys → APNs key → upload in Firebase → Cloud Messaging. |
 | 4 | Both | **Push has no sender** | Nothing sends a push yet. | Install `wordpress-integration/push-on-publish.php` (now in the repo) and the service-account JSON on the WordPress host. |
-| 5 | Both | **Contributor backend not deployed** | The contributor area shows "not enabled" until `ContributorConfig.ENDPOINT_URL` is set. Shipping it like that is allowed, but App Review will flag a dead menu item, so either deploy it or hide the entry. | Follow `backend/apps-script/README.md` (≈15 min), paste the URL, rebuild. |
-| 6 | Both | **Reviewer demo code** | Apple Guideline 2.1 and Play "App access" require login-gated features to be reviewable. | Create a review code with both roles and put it in the App Store review notes (`app-previews/app-store-listing.md`) and Play Console → App access. |
+| 5 | Both | **Partners plugin not installed** | The app calls the WordPress plugin; until it is installed every code is rejected, and App Review will flag a dead menu item. | Install `wordpress-integration/panorama-partners/` (README, ≈5 min) and add at least one partner. |
+| 6 | Both | **Reviewer demo code** | Apple Guideline 2.1 and Play "App access" require login-gated features to be reviewable. | WordPress → Συνεργάτες → add "App Review" with both roles; put its password in the App Store review notes (`app-previews/app-store-listing.md`) and Play Console → App access. |
 | 7 | iOS | **iOS build not verified for this change** | The iOS Kotlin/Swift code was written on Windows and has **not been compiled**. iOS builds need a Mac. | On the Mac: open Xcode, let SwiftPM fetch HaishinKit, build, and run on a **real iPhone** (camera, mic and RTMP don't work in the Simulator). Fix any compile nits. See §4. |
 
 ## 2. Store declarations that change with 1.1.0
@@ -65,7 +65,8 @@ are **no longer accurate**. Submitting them now would be a policy violation.
 | Check | Result |
 |---|---|
 | Android `assembleDebug` (JDK 21) | ✅ BUILD SUCCESSFUL |
-| Unit tests: Apps Script redirect handling, error mapping, upload payload (`ContributorApiTest`, 5 tests) | ✅ 5/5 pass |
+| Unit tests: plugin responses, error mapping (incl. 413, throttling, core REST errors), upload payload (`ContributorApiTest`, 10 tests) | ✅ 10/10 pass |
+| WordPress plugin on WP 6.8 / PHP 8.3 (Docker): admin forms, nonces, verify/roles/live, uploads incl. 18 MB, file-type spoofing, throttling | ✅ all as expected (real email delivery not tested) |
 | Backend `Code.gs` against stubbed Google services: bad/short codes, `constructor`/`__proto__` bypass attempts, roles, Drive, email, 25 MB limit, malformed JSON | ✅ 11/11 as expected |
 | On emulator (Pixel 10 Pro, API 37): drawer entry → contributor home, voice recording (1:17 → 0.5 MB), camera capture with runtime permission, attachment tiles + size total, send error path, live screen camera preview, LIVE disabled without a stream key | ✅ no crashes |
 | Real upload to Drive/email, real YouTube broadcast | ❌ not run. Needs the deployed backend + stream key |
@@ -79,7 +80,7 @@ strengthens the App Store "more than a website" case.
 
 | # | Feature | Why readers care | Effort |
 |---|---|---|---|
-| 1 | **Watch live inside the app.** A "🔴 LIVE" banner on the home screen when the channel is streaming, opening an embedded YouTube player | Turns the new broadcast feature into something every reader sees: village festivals, council meetings, church services, football | S–M (poll the channel's `/live` or YouTube Data API key in Apps Script) |
+| 1 | **Watch live inside the app.** A "🔴 LIVE" banner on the home screen when the channel is streaming, opening an embedded YouTube player | Turns the new broadcast feature into something every reader sees: village festivals, council meetings, church services, football | S–M (poll the channel's `/live` or YouTube Data API from the WordPress plugin) |
 | 2 | **Notification topics.** Let readers choose categories (Εκδηλώσεις, Αθλητικά, Ανακοινώσεις, Έκτακτα), one FCM topic each | Fewer, more relevant pushes means fewer uninstalls. The WordPress snippet already knows the post's categories. | S |
 | 3 | **"Send us news" for everyone.** A public, moderated version of the contributor form (photo + text, no code), rate-limited and landing in a Drive "inbox" | Citizen reporting is the lifeblood of village news. Reuses 90% of what was built. | S (needs a moderation habit + Apple 1.2 report/block wording) |
 | 4 | **Events calendar** with "add to calendar" and reminders (panigiria, cultural August, markets) | The most-read category, and it's useful, not just readable | M |

@@ -175,17 +175,17 @@ class SubmissionScreen : Screen {
 
                 ContributorSectionTitle("Αποστολή σε")
                 DestinationOption(
+                    selected = model.destination == SubmissionDestination.WORDPRESS,
+                    title = "Σύνταξη",
+                    subtitle = "Απευθείας στο σύστημα της σύνταξης",
+                    enabled = !model.sending
+                ) { model.destination = SubmissionDestination.WORDPRESS }
+                DestinationOption(
                     selected = model.destination == SubmissionDestination.EMAIL,
                     title = "Email",
                     subtitle = ContributorConfig.MAIL_TO,
                     enabled = !model.sending
                 ) { model.destination = SubmissionDestination.EMAIL }
-                DestinationOption(
-                    selected = model.destination == SubmissionDestination.DRIVE,
-                    title = "Google Drive",
-                    subtitle = "Φάκελος υλικού της σύνταξης",
-                    enabled = !model.sending
-                ) { model.destination = SubmissionDestination.DRIVE }
 
                 model.error?.let {
                     Text(

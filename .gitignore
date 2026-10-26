@@ -33,3 +33,4 @@ composeApp/build/xcode-frameworks/
 iosApp/fastlane/report.xml
 iosApp/fastlane/README.md
 iosApp/vendor/
+*.zip

@@ -23,7 +23,7 @@ class SubmissionScreenModel(
 
     var title by mutableStateOf("")
     var text by mutableStateOf("")
-    var destination by mutableStateOf(SubmissionDestination.EMAIL)
+    var destination by mutableStateOf(SubmissionDestination.WORDPRESS)
     val attachments = mutableStateListOf<MediaAttachment>()
 
     var sending by mutableStateOf(false)

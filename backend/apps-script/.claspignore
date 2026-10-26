@@ -1,4 +1,0 @@
-# clasp pushes only the script and its manifest
-**/**
-!Code.gs
-!appsscript.json

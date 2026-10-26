@@ -5,6 +5,23 @@ behind the key decisions. Newest entries at the top.
 
 ---
 
+## 2026-10-26 — Contributor backend moves to a WordPress plugin
+
+- **New** `wordpress-integration/panorama-partners/`: WordPress admin → Συνεργάτες
+  to add partners with their own passwords and roles (submit / live),
+  deactivate or delete them, receive material (private "Υλικό συνεργατών" posts +
+  Media Library files, or email) and set the YouTube stream key. Passwords are
+  stored as HMAC-SHA256 only. Wrong attempts are throttled per IP, and uploads are
+  validated by content (JPEG/PNG, MP4/M4A).
+- App: `ContributorConfig.ENDPOINT_URL` → `/wp-json/panorama/v1/contributor`;
+  Apps Script redirect handling removed; destination "Google Drive" → "Σύνταξη"
+  (now the default); new messages for throttling and web-server 413.
+- `backend/apps-script/` removed. Its deployment can be deleted in Google Apps Script.
+- Verified: 10/10 `ContributorApiTest`; plugin exercised end-to-end on
+  WordPress 6.8 / PHP 8.3 in Docker; `php -l` on 7.4.
+
+---
+
 ## 2026-10-15 — 1.1.0: contributor area (uploads + YouTube live), push completion, store fixes
 
 **Contributor area** (drawer → ΣΥΝΕΡΓΑΤΕΣ), unlocked with a per-person access code:

@@ -77,7 +77,7 @@ class ContributorHomeScreen : Screen {
                     ActionCard(
                         icon = Icons.Filled.CloudUpload,
                         title = "Αποστολή υλικού",
-                        description = "Φωτογραφίες, ηχογραφήσεις και κείμενο προς τη σύνταξη, με email ή στο Google Drive."
+                        description = "Φωτογραφίες, ηχογραφήσεις και κείμενο προς τη σύνταξη."
                     ) { navigator.push(SubmissionScreen()) }
                 }
                 if (current.canStream) {

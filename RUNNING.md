@@ -418,24 +418,25 @@ the splash.
 Drawer → **ΣΥΝΕΡΓΑΤΕΣ → Περιοχή συνεργατών**. With a valid access code a
 contributor can:
 - send **text + photos (camera or library) + voice recordings** to the newsroom,
-  choosing **Email** (info@panoramapolihnitou.gr) or **Google Drive**;
-- **broadcast live** to the channel's YouTube stream (codes with the `live` role only).
+  choosing **Σύνταξη** (stored in WordPress admin) or **Email**;
+- **broadcast live** to the channel's YouTube stream (partners with the `live` role only).
 
-Everything secret lives in a free **Google Apps Script** web app, not in the
-app. The codes are checked server-side, and the stream key is only handed to
-`live` codes.
+The backend is the **WordPress plugin** in
+[`wordpress-integration/panorama-partners/`](./wordpress-integration/panorama-partners/README.md):
+partners, their passwords and roles, the newsroom mailbox and the YouTube stream
+key are all managed in WordPress admin → **Συνεργάτες**. Nothing secret is in
+the app, and adding or revoking a partner needs no app release.
 
-**Setup:** follow [`backend/apps-script/README.md`](./backend/apps-script/README.md),
-then paste the web-app URL into `ContributorConfig.ENDPOINT_URL`
-(`composeApp/src/commonMain/.../data/remote/ContributorApi.kt`) and rebuild.
-While that constant is empty, the screen says the feature isn't enabled yet.
+**Setup:** install and configure the plugin (README, ≈5 min). The app calls
+`ContributorConfig.ENDPOINT_URL` = `https://panoramapolihnitou.gr/wp-json/panorama/v1/contributor`
+(`composeApp/src/commonMain/.../data/remote/ContributorApi.kt`).
 
 | Piece | Android | iOS |
 |---|---|---|
 | Camera photo | `TakePicture` + FileProvider (`res/xml/file_paths.xml`) | `UIImagePickerController` |
 | Library | Photo Picker (no storage permission) | `PHPickerViewController` (no permission) |
 | Voice | `MediaRecorder`, AAC 64 kbps mono `.m4a` | `AVAudioRecorder`, same format |
-| Live (RTMPS → YouTube) | RootEncoder 2.5.9 (JitPack) | HaishinKit 1.9.9 (SwiftPM) via `iosApp/iosApp/LiveStreamBridge.swift` |
+| Live (RTMPS → YouTube) | RootEncoder 2.5.9 (JitPack) | HaishinKit 2.2.5 (SwiftPM, `HaishinKit` + `RTMPHaishinKit`) via `iosApp/iosApp/LiveStreamBridge.swift` |
 
 Photos are downscaled to 2048 px JPEG (metadata, including GPS, is stripped).
 One submission is capped at 18 MB.
@@ -446,7 +447,8 @@ clashes with the app's Ktor 3. If you upgrade Kotlin, revisit this pin. Ktor is
 pinned to 3.1.1 to match what RootEncoder brings in.
 
 **iOS note:** the Swift bridge exists because HaishinKit has no Objective-C API.
-HaishinKit is pinned to `1.9.x` (2.x rewrote the API).
+HaishinKit is on `2.2.x`: Xcode 26's Swift compiler crashes building 1.9.9 in
+Release, and 1.9.9 was the last 1.x release.
 
 ---
 
