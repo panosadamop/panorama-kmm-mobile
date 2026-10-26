@@ -20,7 +20,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         // entirely until a real one is dropped in from the Firebase console
         // (mirrors the Android side, which no-ops the same way without
         // google-services.json).
-        guard Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil else {
+        // Checks the contents too: CI's compile check bundles an empty placeholder
+        // plist, and FirebaseApp.configure() crashes on one without an app id.
+        guard let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+              let config = NSDictionary(contentsOfFile: path),
+              config["GOOGLE_APP_ID"] is String else {
             return true
         }
 

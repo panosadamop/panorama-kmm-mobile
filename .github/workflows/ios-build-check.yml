@@ -41,6 +41,9 @@ jobs:
           key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
 
       # Gitignored but listed in the Resources phase; any valid plist compiles.
+      # Gitignored but listed in the Resources phase; any valid plist compiles.
+      # Kept empty on purpose: the .ipa below is a downloadable artifact, so no
+      # secrets go into it. The app sees no GOOGLE_APP_ID and skips Firebase (no push).
       - name: Placeholder GoogleService-Info.plist
         run: |
           plutil -create xml1 iosApp/iosApp/GoogleService-Info.plist
@@ -52,6 +55,7 @@ jobs:
           xcodebuild build \
             -project iosApp.xcodeproj -scheme iosApp -configuration Release \
             -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/dd" \
             -skipMacroValidation \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
             2>&1 | tee "$RUNNER_TEMP/xcodebuild.log" | grep -E "error:|warning: .*deprecated|BUILD (SUCCEEDED|FAILED)|^e: " || true
@@ -60,6 +64,21 @@ jobs:
             grep -nE "error: |^e: |What went wrong|Error! |Stack dump:" -A4 "$RUNNER_TEMP/xcodebuild.log" | cut -c1-400 | head -150
             exit 1
           }
+
+      # Unsigned .ipa for sideloading: Sideloadly (Windows/macOS) re-signs it with
+      # your Apple ID. Store builds go through ios-testflight.yml instead.
+      - name: Package unsigned .ipa
+        run: |
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R "$RUNNER_TEMP/dd/Build/Products/Release-iphoneos/Panorama.app" "$RUNNER_TEMP/ipa/Payload/"
+          (cd "$RUNNER_TEMP/ipa" && zip -qry "$RUNNER_TEMP/Panorama-unsigned.ipa" Payload)
+          ls -la "$RUNNER_TEMP/Panorama-unsigned.ipa"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Panorama-unsigned-ipa
+          path: ${{ runner.temp }}/Panorama-unsigned.ipa
+          retention-days: 14
 
       - uses: actions/upload-artifact@v4
         if: always()
