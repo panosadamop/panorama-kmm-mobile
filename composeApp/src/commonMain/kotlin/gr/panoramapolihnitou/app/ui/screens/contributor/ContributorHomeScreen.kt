@@ -61,7 +61,7 @@ class ContributorHomeScreen : Screen {
         LaunchedEffect(current.code) {
             runCatching { AppGraph.contributorApi.verify(current.code) }
                 .onSuccess { session.save(current.copy(name = it.name ?: current.name, roles = it.roles)) }
-                .onFailure { if (it is ContributorException && it.isInvalidCode) session.clear() }
+                .onFailure { if (it is ContributorException && it.endsSession) session.clear() }
         }
 
         Column(Modifier.fillMaxSize()) {

@@ -64,7 +64,7 @@ class SubmissionScreenModel(
                 successMessage = it.message ?: "Το υλικό στάλθηκε. Ευχαριστούμε!"
             }.onFailure {
                 error = it.contributorMessage()
-                if (it is ContributorException && it.isInvalidCode) session.clear()
+                if (it is ContributorException && it.endsSession) session.clear()
             }
             sending = false
         }

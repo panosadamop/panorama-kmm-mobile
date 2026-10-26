@@ -63,6 +63,12 @@ data class ContributorResponse(
 /** The backend answered but refused — e.g. a wrong/revoked code or a missing role. */
 class ContributorException(val code: String, message: String) : Exception(message) {
     val isInvalidCode: Boolean get() = code == "invalid_code"
+
+    /**
+     * The code no longer opens the contributor area — wrong/revoked, or outside the
+     * partnership's date range — so the stored session should be dropped.
+     */
+    val endsSession: Boolean get() = code == "invalid_code" || code == "expired" || code == "not_started"
 }
 
 @Serializable
@@ -135,6 +141,9 @@ class ContributorApi(
         "too_large" -> "Τα συνημμένα είναι πολύ μεγάλα για αποστολή."
         "not_configured" -> "Η λειτουργία δεν έχει ρυθμιστεί ακόμη από τη συντακτική ομάδα."
         "rate_limited" -> "Πάρα πολλές λάθος προσπάθειες. Δοκιμάστε ξανά σε 15 λεπτά."
+        // The server's message carries the date ("…έληξε στις 31/12/2026."); these are fallbacks.
+        "expired" -> serverMessage ?: "Η συνεργασία σας έχει λήξει. Επικοινωνήστε με τη σύνταξη."
+        "not_started" -> serverMessage ?: "Η συνεργασία σας δεν έχει ξεκινήσει ακόμη."
         else -> serverMessage ?: "Κάτι πήγε στραβά. Δοκιμάστε ξανά."
     }
 }

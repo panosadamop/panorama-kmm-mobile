@@ -17,6 +17,7 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
@@ -59,6 +60,30 @@ class ContributorApiTest {
         val error = assertFailsWith<ContributorException> { api.verify("wrong-code-123") }
         assertTrue(error.isInvalidCode)
         assertEquals("Ο κωδικός δεν είναι έγκυρος.", error.message)
+    }
+
+    @Test
+    fun expiredPartnershipShowsTheDateAndEndsTheSession() = runTest {
+        val api = plugin("""{"ok":false,"error":"expired","message":"Η συνεργασία σας έληξε στις 31/12/2026. Επικοινωνήστε με τη σύνταξη για ανανέωση."}""")
+        val error = assertFailsWith<ContributorException> { api.verify("Polichnitos#2026!") }
+        assertEquals("Η συνεργασία σας έληξε στις 31/12/2026. Επικοινωνήστε με τη σύνταξη για ανανέωση.", error.message)
+        assertTrue(error.endsSession)
+        assertFalse(error.isInvalidCode)
+    }
+
+    @Test
+    fun partnershipNotStartedYetEndsTheSession() = runTest {
+        val api = plugin("""{"ok":false,"error":"not_started","message":"Η συνεργασία σας ξεκινά στις 01/12/2026."}""")
+        val error = assertFailsWith<ContributorException> { api.liveConfig("Polichnitos#2026!") }
+        assertEquals("Η συνεργασία σας ξεκινά στις 01/12/2026.", error.message)
+        assertTrue(error.endsSession)
+    }
+
+    @Test
+    fun forbiddenKeepsTheSession() = runTest {
+        val api = plugin("""{"ok":false,"error":"forbidden"}""")
+        val error = assertFailsWith<ContributorException> { api.liveConfig("giorgos-only-submit") }
+        assertFalse(error.endsSession)
     }
 
     @Test

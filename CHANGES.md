@@ -5,6 +5,17 @@ behind the key decisions. Newest entries at the top.
 
 ---
 
+## 2026-10-26 — Partners plugin 1.1.0: partnership periods
+
+- Each partner has a **start / end date** or **Χωρίς λήξη** (no end date). Statuses are
+  Ενεργός / Προγραμματισμένος / Έληξε / Ανενεργός, with list filters, search, a
+  warning for partnerships ending within 7 days, quick 1/3/6/12-month buttons,
+  and renewal without changing the password. Upgrades in place (DB v2).
+- API: `not_started` / `expired`, each with a dated message. The app shows the message
+  and signs the partner out (`ContributorException.endsSession`). 13/13 tests.
+
+---
+
 ## 2026-10-26 — Contributor backend moves to a WordPress plugin
 
 - **New** `wordpress-integration/panorama-partners/`: WordPress admin → Συνεργάτες

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Πανόραμα — Συνεργάτες εφαρμογής
  * Description:       Κωδικοί πρόσβασης για τους συνεργάτες της εφαρμογής, παραλαβή υλικού (φωτογραφίες, ηχογραφήσεις, κείμενο) και ρυθμίσεις ζωντανής μετάδοσης YouTube.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Πανόραμα Πολιχνίτου
@@ -13,8 +13,11 @@
  * endpoint, POST /wp-json/panorama/v1/contributor, with a JSON body
  *   {"action": "verify" | "submit" | "live", "code": "<partner password>", ...}
  * and always gets HTTP 200 with {"ok": true, ...} or {"ok": false, "error": "<code>"}.
- * Error codes: invalid_code, forbidden, too_large, not_configured, rate_limited,
- * bad_request, server_error.
+ * Error codes: invalid_code, expired, not_started, forbidden, too_large,
+ * not_configured, rate_limited, bad_request, server_error.
+ *
+ * Each partnership can be limited to a date range (site timezone, both days
+ * inclusive); an empty end date means it never expires.
  *
  * Passwords are never stored: only an HMAC-SHA256 of each one, keyed with a random
  * secret this plugin keeps in the `panorama_partners_secret` option (so rotating
@@ -26,8 +29,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PANORAMA_PARTNERS_VERSION', '1.0.0');
-define('PANORAMA_PARTNERS_DB_VERSION', 1);
+define('PANORAMA_PARTNERS_VERSION', '1.1.0');
+define('PANORAMA_PARTNERS_DB_VERSION', 2);
+// Partnerships ending within this many days are highlighted in the list.
+define('PANORAMA_PARTNERS_EXPIRY_WARNING_DAYS', 7);
 define('PANORAMA_PARTNERS_MIN_CODE_LENGTH', 10);
 define('PANORAMA_PARTNERS_MAX_FILES', 20);
 // The app caps uploads at 18 MB raw; this is the server-side backstop and also
@@ -85,6 +90,8 @@ function panorama_partners_install()
         code_hint varchar(16) NOT NULL DEFAULT '',
         roles varchar(100) NOT NULL DEFAULT '',
         active tinyint(1) NOT NULL DEFAULT 1,
+        starts_on date NULL DEFAULT NULL,
+        ends_on date NULL DEFAULT NULL,
         created_at datetime NOT NULL,
         last_used_at datetime NULL DEFAULT NULL,
         PRIMARY KEY  (id),
@@ -150,6 +157,77 @@ function panorama_partners_role_list($partner)
         array_keys(panorama_partners_roles()),
         array_filter(explode(',', (string) $partner->roles))
     ));
+}
+
+/** Today in the site's timezone, as Y-m-d (comparable with the DATE columns). */
+function panorama_partners_today()
+{
+    return wp_date('Y-m-d');
+}
+
+/**
+ * `inactive` (switched off by hand), `scheduled` (starts later), `expired`
+ * (end date passed) or `active`. Dates are inclusive: a partnership ending on
+ * the 31st still works all day on the 31st.
+ */
+function panorama_partners_status($partner)
+{
+    $today = panorama_partners_today();
+    if (!$partner->active) {
+        return 'inactive';
+    }
+    if (!empty($partner->starts_on) && $partner->starts_on > $today) {
+        return 'scheduled';
+    }
+    if (!empty($partner->ends_on) && $partner->ends_on < $today) {
+        return 'expired';
+    }
+    return 'active';
+}
+
+function panorama_partners_statuses()
+{
+    return array(
+        'active'    => 'Ενεργοί',
+        'scheduled' => 'Προγραμματισμένοι',
+        'expired'   => 'Έληξαν',
+        'inactive'  => 'Ανενεργοί',
+    );
+}
+
+function panorama_partners_date($ymd)
+{
+    return $ymd ? mysql2date('d/m/Y', $ymd) : '';
+}
+
+/** Human-readable range, e.g. "01/11/2026 – 31/12/2026" or "από 01/11/2026 · χωρίς λήξη". */
+function panorama_partners_period($partner)
+{
+    $from = panorama_partners_date($partner->starts_on);
+    $to = panorama_partners_date($partner->ends_on);
+    if ($to === '') {
+        return ($from !== '' ? 'από ' . $from . ' · ' : '') . 'χωρίς λήξη';
+    }
+    return ($from !== '' ? $from : 'έως') . ($from !== '' ? ' – ' : ' ') . $to;
+}
+
+/** Days until the end date (0 = ends today), or null when unlimited. */
+function panorama_partners_days_left($partner)
+{
+    if (empty($partner->ends_on)) {
+        return null;
+    }
+    $today = new DateTime(panorama_partners_today());
+    $end = new DateTime($partner->ends_on);
+    return (int) $today->diff($end)->format('%r%a');
+}
+
+/** Accepts the Y-m-d an <input type="date"> sends; anything else is treated as empty. */
+function panorama_partners_parse_date($value)
+{
+    $value = trim((string) $value);
+    $date = DateTime::createFromFormat('!Y-m-d', $value);
+    return ($date && $date->format('Y-m-d') === $value) ? $value : null;
 }
 
 /** A readable random code like `k7Qe-29fz-Lm4X-pX3n` (≈80 bits). */
@@ -226,6 +304,18 @@ function panorama_partners_rest(WP_REST_Request $request)
         set_transient($throttle_key, $failures + 1, PANORAMA_PARTNERS_FAILURE_WINDOW);
         sleep(1); // slows down guessing
         return panorama_partners_fail('invalid_code');
+    }
+
+    // The code is right, so these don't count towards throttling.
+    switch (panorama_partners_status($partner)) {
+        case 'scheduled':
+            return panorama_partners_fail('not_started', sprintf(
+                'Η συνεργασία σας ξεκινά στις %s.', panorama_partners_date($partner->starts_on)
+            ));
+        case 'expired':
+            return panorama_partners_fail('expired', sprintf(
+                'Η συνεργασία σας έληξε στις %s. Επικοινωνήστε με τη σύνταξη για ανανέωση.', panorama_partners_date($partner->ends_on)
+            ));
     }
 
     global $wpdb;
@@ -536,6 +626,10 @@ function panorama_partners_handle_save()
     $code = trim((string) wp_unslash(isset($_POST['code']) ? $_POST['code'] : ''));
     $roles = array_intersect(array_keys(panorama_partners_roles()), (array) (isset($_POST['roles']) ? $_POST['roles'] : array()));
     $active = empty($_POST['active']) ? 0 : 1;
+    $starts_on = panorama_partners_parse_date(isset($_POST['starts_on']) ? $_POST['starts_on'] : '');
+    $ends_on = empty($_POST['unlimited'])
+        ? panorama_partners_parse_date(isset($_POST['ends_on']) ? $_POST['ends_on'] : '')
+        : null;
 
     $back = array('edit' => $id ?: 'new');
     if ($name === '') {
@@ -545,7 +639,21 @@ function panorama_partners_handle_save()
         panorama_partners_redirect($back + array('msg' => 'short'));
     }
 
-    $data = array('name' => $name, 'email' => $email, 'roles' => implode(',', $roles), 'active' => $active);
+    if (empty($_POST['unlimited']) && $ends_on === null) {
+        panorama_partners_redirect($back + array('msg' => 'noend'));
+    }
+    if ($starts_on !== null && $ends_on !== null && $ends_on < $starts_on) {
+        panorama_partners_redirect($back + array('msg' => 'range'));
+    }
+
+    $data = array(
+        'name'      => $name,
+        'email'     => $email,
+        'roles'     => implode(',', $roles),
+        'active'    => $active,
+        'starts_on' => $starts_on, // null → NULL: usable immediately
+        'ends_on'   => $ends_on,   // null → NULL: never expires
+    );
     if ($code !== '') {
         $data['code_hash'] = panorama_partners_hash($code);
         $data['code_hint'] = panorama_partners_hint($code);
@@ -600,6 +708,8 @@ function panorama_partners_notice()
         'name'    => array('error', 'Συμπληρώστε όνομα.'),
         'short'   => array('error', sprintf('Ο κωδικός πρέπει να έχει τουλάχιστον %d χαρακτήρες.', PANORAMA_PARTNERS_MIN_CODE_LENGTH)),
         'taken'   => array('error', 'Αυτός ο κωδικός χρησιμοποιείται ήδη από άλλον συνεργάτη.'),
+        'range'   => array('error', 'Η ημερομηνία λήξης είναι πριν από την ημερομηνία έναρξης.'),
+        'noend'   => array('error', 'Ορίστε ημερομηνία λήξης ή επιλέξτε «Χωρίς λήξη».'),
     );
     $key = isset($_GET['msg']) ? sanitize_key($_GET['msg']) : '';
     if (isset($messages[$key])) {
@@ -625,41 +735,118 @@ function panorama_partners_page()
 function panorama_partners_list()
 {
     $roles = panorama_partners_roles();
+    $statuses = panorama_partners_statuses();
+    $filter = isset($_GET['status']) ? sanitize_key($_GET['status']) : '';
+    $search = isset($_GET['s']) ? sanitize_text_field(wp_unslash($_GET['s'])) : '';
+
+    $all = panorama_partners_all();
+    $counts = array_fill_keys(array_keys($statuses), 0);
+    foreach ($all as $p) {
+        $counts[panorama_partners_status($p)]++;
+    }
+    $lower = function ($text) {
+        return function_exists('mb_strtolower') ? mb_strtolower($text) : strtolower($text);
+    };
+    $partners = array_filter($all, function ($p) use ($filter, $search, $lower) {
+        if ($filter !== '' && panorama_partners_status($p) !== $filter) {
+            return false;
+        }
+        return $search === '' || strpos($lower($p->name . ' ' . $p->email), $lower($search)) !== false;
+    });
+
+    $base = admin_url('admin.php?page=panorama-partners');
     echo '<h1 class="wp-heading-inline">Συνεργάτες εφαρμογής</h1> ';
-    echo '<a class="page-title-action" href="' . esc_url(admin_url('admin.php?page=panorama-partners&edit=new')) . '">Νέος συνεργάτης</a>';
+    echo '<a class="page-title-action" href="' . esc_url(add_query_arg('edit', 'new', $base)) . '">Νέος συνεργάτης</a>';
     echo '<hr class="wp-header-end">';
     panorama_partners_notice();
-    echo '<p>Κάθε συνεργάτης μπαίνει στην εφαρμογή (μενού → Συνεργάτες) με τον κωδικό του. Αν απενεργοποιήσετε ή διαγράψετε κάποιον, η συσκευή του αποσυνδέεται στην επόμενη ενέργεια.</p>';
 
-    $partners = panorama_partners_all();
-    echo '<table class="widefat striped"><thead><tr><th>Όνομα</th><th>Κωδικός</th><th>Δικαιώματα</th><th>Κατάσταση</th><th>Τελευταία χρήση</th><th></th></tr></thead><tbody>';
+    $ending = array_filter($all, function ($p) {
+        $left = panorama_partners_days_left($p);
+        return panorama_partners_status($p) === 'active' && $left !== null && $left <= PANORAMA_PARTNERS_EXPIRY_WARNING_DAYS;
+    });
+    if ($ending) {
+        $names = array_map(function ($p) {
+            return $p->name . ' (' . panorama_partners_date($p->ends_on) . ')';
+        }, $ending);
+        echo '<div class="notice notice-warning"><p>' . esc_html(sprintf(
+            'Λήγουν τις επόμενες %d ημέρες: %s.',
+            PANORAMA_PARTNERS_EXPIRY_WARNING_DAYS,
+            implode(', ', $names)
+        )) . '</p></div>';
+    }
+
+    echo '<p>Κάθε συνεργάτης μπαίνει στην εφαρμογή (μενού → Συνεργάτες) με τον κωδικό του, μόνο μέσα στην περίοδο συνεργασίας. Αν απενεργοποιήσετε ή διαγράψετε κάποιον, ή λήξει η περίοδός του, η συσκευή του αποσυνδέεται στην επόμενη ενέργεια.</p>';
+
+    $links = array('<a href="' . esc_url($base) . '"' . ($filter === '' ? ' class="current"' : '') . '>Όλοι <span class="count">(' . count($all) . ')</span></a>');
+    foreach ($statuses as $key => $label) {
+        $links[] = '<a href="' . esc_url(add_query_arg('status', $key, $base)) . '"' . ($filter === $key ? ' class="current"' : '') . '>'
+            . esc_html($label) . ' <span class="count">(' . (int) $counts[$key] . ')</span></a>';
+    }
+    echo '<ul class="subsubsub"><li>' . implode(' | </li><li>', $links) . '</li></ul>';
+    echo '<form method="get" style="float:right;margin:4px 0 8px"><input type="hidden" name="page" value="panorama-partners">'
+        . ($filter !== '' ? '<input type="hidden" name="status" value="' . esc_attr($filter) . '">' : '')
+        . '<input type="search" name="s" value="' . esc_attr($search) . '" placeholder="Όνομα ή email"> '
+        . '<button class="button">Αναζήτηση</button></form><br class="clear">';
+
+    $badge = panorama_partners_badges();
+    echo '<table class="widefat striped"><thead><tr><th>Όνομα</th><th>Κωδικός</th><th>Δικαιώματα</th><th>Περίοδος συνεργασίας</th><th>Κατάσταση</th><th>Τελευταία χρήση</th><th></th></tr></thead><tbody>';
     if (!$partners) {
-        echo '<tr><td colspan="6">Δεν υπάρχουν συνεργάτες ακόμη.</td></tr>';
+        echo '<tr><td colspan="7">' . ($all ? 'Κανένας συνεργάτης δεν ταιριάζει.' : 'Δεν υπάρχουν συνεργάτες ακόμη.') . '</td></tr>';
     }
     foreach ($partners as $p) {
+        $status = panorama_partners_status($p);
+        $left = panorama_partners_days_left($p);
         $labels = array_map(function ($r) use ($roles) { return $roles[$r]; }, panorama_partners_role_list($p));
+        $edit = add_query_arg('edit', $p->id, $base);
         $toggle = wp_nonce_url(admin_url('admin-post.php?action=panorama_partners_toggle&id=' . $p->id), 'panorama_partners_toggle_' . $p->id);
         $delete = wp_nonce_url(admin_url('admin-post.php?action=panorama_partners_delete&id=' . $p->id), 'panorama_partners_delete_' . $p->id);
+
+        $period = esc_html(panorama_partners_period($p));
+        if ($status === 'active' && $left !== null && $left <= PANORAMA_PARTNERS_EXPIRY_WARNING_DAYS) {
+            $period .= '<br><span style="color:#d63638">' . esc_html($left === 0 ? 'Λήγει σήμερα' : sprintf('Λήγει σε %d ημ.', $left)) . '</span>';
+        }
+
         echo '<tr>';
-        echo '<td><strong><a href="' . esc_url(admin_url('admin.php?page=panorama-partners&edit=' . $p->id)) . '">' . esc_html($p->name) . '</a></strong>'
+        echo '<td><strong><a href="' . esc_url($edit) . '">' . esc_html($p->name) . '</a></strong>'
             . ($p->email ? '<br><span class="description">' . esc_html($p->email) . '</span>' : '') . '</td>';
         echo '<td><code>' . esc_html($p->code_hint) . '</code></td>';
         echo '<td>' . esc_html($labels ? implode(', ', $labels) : '—') . '</td>';
-        echo '<td>' . ($p->active ? 'Ενεργός' : '<span style="color:#b32d2e">Ανενεργός</span>') . '</td>';
+        echo '<td>' . $period . '</td>';
+        echo '<td><span style="color:' . esc_attr($badge[$status][0]) . ';font-weight:600">' . esc_html($badge[$status][1]) . '</span></td>';
         echo '<td>' . esc_html($p->last_used_at ? mysql2date('d/m/Y H:i', $p->last_used_at) : '—') . '</td>';
-        echo '<td><a href="' . esc_url($toggle) . '">' . ($p->active ? 'Απενεργοποίηση' : 'Ενεργοποίηση') . '</a> | '
+        echo '<td><a href="' . esc_url($edit) . '">Επεξεργασία</a> | <a href="' . esc_url($toggle) . '">' . ($p->active ? 'Απενεργοποίηση' : 'Ενεργοποίηση') . '</a> | '
             . '<a href="' . esc_url($delete) . '" style="color:#b32d2e" onclick="return confirm(\'Διαγραφή του συνεργάτη;\')">Διαγραφή</a></td>';
         echo '</tr>';
     }
     echo '</tbody></table>';
 }
 
+/** Colour + label per status, shared by the list and the edit form. */
+function panorama_partners_badges()
+{
+    return array(
+        'active'    => array('#00a32a', 'Ενεργός'),
+        'scheduled' => array('#2271b1', 'Προγραμματισμένος'),
+        'expired'   => array('#787c82', 'Έληξε'),
+        'inactive'  => array('#b32d2e', 'Ανενεργός'),
+    );
+}
+
 function panorama_partners_form($partner)
 {
     $is_new = !$partner;
     $current_roles = $is_new ? array('submit') : panorama_partners_role_list($partner);
+    $starts_on = $is_new ? panorama_partners_today() : (string) $partner->starts_on;
+    $ends_on = $is_new ? '' : (string) $partner->ends_on;
+    $unlimited = $ends_on === '';
+
     echo '<h1>' . ($is_new ? 'Νέος συνεργάτης' : 'Επεξεργασία: ' . esc_html($partner->name)) . '</h1>';
     panorama_partners_notice();
+    if (!$is_new) {
+        $badge = panorama_partners_badges()[panorama_partners_status($partner)];
+        echo '<p>Κατάσταση τώρα: <strong style="color:' . esc_attr($badge[0]) . '">' . esc_html($badge[1]) . '</strong> · '
+            . esc_html(panorama_partners_period($partner)) . '</p>';
+    }
     echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
     wp_nonce_field('panorama_partners_save');
     echo '<input type="hidden" name="action" value="panorama_partners_save">';
@@ -687,12 +874,42 @@ function panorama_partners_form($partner)
     }
     echo '</td></tr>';
 
+    echo '<tr><th>Περίοδος συνεργασίας</th><td>'
+        . '<label>Από <input type="date" id="pp-start" name="starts_on" value="' . esc_attr($starts_on) . '"></label> '
+        . '<label style="margin-left:12px">Έως <input type="date" id="pp-end" name="ends_on" value="' . esc_attr($ends_on) . '"></label>'
+        . '<p style="margin:8px 0"><label><input type="checkbox" id="pp-unlimited" name="unlimited" value="1"' . checked($unlimited, true, false)
+        . '> <strong>Χωρίς λήξη</strong> (απεριόριστη συνεργασία)</label></p>'
+        . '<p>Διάρκεια από την έναρξη: '
+        . '<button type="button" class="button button-small" data-months="1">1 μήνας</button> '
+        . '<button type="button" class="button button-small" data-months="3">3 μήνες</button> '
+        . '<button type="button" class="button button-small" data-months="6">6 μήνες</button> '
+        . '<button type="button" class="button button-small" data-months="12">1 έτος</button></p>'
+        . '<p class="description">Ο συνεργάτης μπαίνει στην εφαρμογή από την αρχή της πρώτης έως το τέλος της τελευταίας ημέρας (ώρα Ελλάδας). Κενή έναρξη: από τώρα.</p>'
+        . '</td></tr>';
+
     echo '<tr><th>Κατάσταση</th><td><label><input type="checkbox" name="active" value="1"'
-        . checked($is_new || $partner->active, true, false) . '> Ενεργός</label></td></tr>';
+        . checked($is_new || $partner->active, true, false) . '> Ενεργός</label>'
+        . '<p class="description">Η απενεργοποίηση κλειδώνει τον συνεργάτη αμέσως, ανεξάρτητα από την περίοδο.</p></td></tr>';
 
     echo '</table>';
     submit_button($is_new ? 'Προσθήκη συνεργάτη' : 'Αποθήκευση');
     echo '</form>';
+    // Disabled inputs aren't submitted, which is what "unlimited" wants: the end date is dropped.
+    echo "<script>(function () {
+        var start = document.getElementById('pp-start'), end = document.getElementById('pp-end'), unlimited = document.getElementById('pp-unlimited');
+        function sync() { end.disabled = unlimited.checked; end.required = !unlimited.checked; }
+        unlimited.addEventListener('change', sync);
+        document.querySelectorAll('[data-months]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var from = start.value ? new Date(start.value + 'T00:00:00') : new Date();
+                var to = new Date(from.getFullYear(), from.getMonth() + Number(button.dataset.months), from.getDate() - 1);
+                end.value = to.getFullYear() + '-' + String(to.getMonth() + 1).padStart(2, '0') + '-' + String(to.getDate()).padStart(2, '0');
+                unlimited.checked = false;
+                sync();
+            });
+        });
+        sync();
+    })();</script>";
 }
 
 function panorama_partners_handle_settings()

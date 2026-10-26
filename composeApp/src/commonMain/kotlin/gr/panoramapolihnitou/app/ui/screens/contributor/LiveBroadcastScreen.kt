@@ -80,7 +80,7 @@ class LiveBroadcastScreen : Screen {
                 .onSuccess { config = it }
                 .onFailure {
                     message = it.contributorMessage()
-                    if (it is ContributorException && it.isInvalidCode) session.clear()
+                    if (it is ContributorException && it.endsSession) session.clear()
                 }
         }
 

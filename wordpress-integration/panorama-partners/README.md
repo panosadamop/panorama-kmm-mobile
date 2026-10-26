@@ -2,8 +2,9 @@
 
 Backend of the app's contributor area. From WordPress admin you:
 
-- **add partners and give them passwords** (name, optional email, password, roles),
-  deactivate or delete them at any time;
+- **add, edit, deactivate and delete partners**: name, optional email,
+  password, roles and the **partnership period**: a start and an end date, or
+  **Χωρίς λήξη** (no end date);
 - **receive their material**: text + photos + voice recordings land in
   **Συνεργάτες → Υλικό συνεργατών** (files in the Media Library), or are emailed
   to the newsroom, as the partner chooses in the app;
@@ -37,6 +38,10 @@ add, change or remove partners.
 | Task | Where |
 |---|---|
 | New partner / new password | Συνεργάτες → *Νέος συνεργάτης*, or click a name and type a new password |
+| Limit a partnership in time | *Περίοδος συνεργασίας*: *Από* / *Έως*, or the 1/3/6/12-month buttons. Both days count in full (Athens time). Empty *Από* means from now |
+| Unlimited partnership | Tick *Χωρίς λήξη* |
+| Renew an expired partner | Open them, set a new *Έως* (or *Χωρίς λήξη*) and save. The password stays the same |
+| Who expires soon | A warning above the list names everyone ending within 7 days. Filters: Ενεργοί / Προγραμματισμένοι / Έληξαν / Ανενεργοί, plus search |
 | Lock someone out | *Απενεργοποίηση* (reversible) or *Διαγραφή*. Their device is signed out on its next action |
 | See who used the app lately | *Τελευταία χρήση* column |
 | Read submitted material | Συνεργάτες → Υλικό συνεργατών. Photos and recordings play inline, with download links |
@@ -76,7 +81,11 @@ shows "attachments too large", and the host can raise it to ~32 MB.
 | `submit` | `destination` (`wordpress`\|`email`; legacy `drive` = `wordpress`), `title`, `text`, `files[{name, mimeType, data(base64)}]` | `{ok, message}` |
 | `live` | — | `{ok, rtmpUrl, streamKey, watchUrl}` |
 
-Errors: `{ok:false, error}` with `invalid_code`, `forbidden`, `too_large`,
+Outside the partnership period the code is refused with `not_started` or
+`expired` and a `message` that includes the date. The app shows it and signs the
+partner out. Neither counts towards the wrong-password throttle.
+
+Errors: `{ok:false, error}` with `invalid_code`, `expired`, `not_started`, `forbidden`, `too_large`,
 `not_configured`, `rate_limited`, `bad_request`, `server_error` (+ `message`).
 
 ## Tested
@@ -86,3 +95,11 @@ On WordPress 6.8 / PHP 8.3 (Docker) on 26 Oct 2026, plus `php -l` on PHP 7.4:
 - **Requests:** verify, roles, `live` with and without a key, the throttle.
 - **Uploads:** JPEG + M4A stored as private submissions with attachments, and an 18 MB upload with 128 MB of PHP memory. Rejected: PHP disguised as a JPEG, invalid base64 and random bytes.
 - **Not tested:** real email delivery, because the test box had no mail server.
+
+1.1.0 (partnership periods), on the same setup: in-place upgrade from 1.0.0
+with an existing partner (the table gets the new columns and the partner keeps
+working, unlimited). Not started / expired / ends today / ends in 3 days /
+unlimited partners created through the admin form and checked against the
+API. Refused forms: end date before start, and no end date without "Χωρίς λήξη".
+Also checked: list counts, filters, search, the expiry warning, and renewing an
+expired partner while keeping the password.
