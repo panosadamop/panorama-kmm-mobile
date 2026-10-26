@@ -35,3 +35,4 @@ iosApp/fastlane/README.md
 iosApp/vendor/
 *.zip
 upload-keystore-*.jks
+dist/
