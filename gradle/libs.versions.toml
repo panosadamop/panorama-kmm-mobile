@@ -12,6 +12,9 @@ android-targetSdk = "36"
 
 # Libraries
 androidx-activityCompose = "1.9.3"
+# Pinned only to lift play-services-basement's transitive fragment 1.1.0, which breaks
+# registerForActivityResult (lint InvalidFragmentVersionForActivityResult blocks release).
+androidx-fragment = "1.8.5"
 coroutines = "1.9.0"
 # Kept in line with what RootEncoder (Android live streaming) pulls in transitively.
 ktor = "3.1.1"
@@ -58,6 +61,7 @@ multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-s
 
 # Android
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
+androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment" }
 
 # Firebase (push notifications — see RUNNING.md → "Push notifications" for setup)
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }

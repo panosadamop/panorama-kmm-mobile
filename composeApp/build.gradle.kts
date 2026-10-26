@@ -85,6 +85,7 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.fragment)
             implementation(libs.ktor.client.okhttp)
             implementation(platform("com.google.firebase:firebase-bom:${libs.versions.firebaseBom.get()}"))
             implementation(libs.firebase.messaging)

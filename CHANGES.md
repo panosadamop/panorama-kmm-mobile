@@ -5,6 +5,21 @@ behind the key decisions. Newest entries at the top.
 
 ---
 
+## 2026-10-26 — Play release build 1.1.0 (versionCode 2)
+
+- **New upload key** `upload-keystore-2026-10.jks` (alias `panorama`, RSA 2048, valid
+  to 2054, SHA-256 `8A:AA:A0:05:…:32:4D`). The July `release-keystore.jks` and its
+  `keystore.properties` were no longer anywhere on this machine. The password is only in
+  `keystore.properties` (gitignored). Back up both. `dist/upload_certificate.pem` is
+  what Play Console asks for in an upload-key reset.
+- `bundleRelease` was blocked by lint `InvalidFragmentVersionForActivityResult`:
+  Firebase Messaging → play-services-basement pulled `androidx.fragment` 1.1.0, which
+  breaks `registerForActivityResult`. Fixed by pinning `androidx.fragment:1.8.5`.
+- `dist/panorama-1.1.0-release.aab` (15 MB) is signed with the new key. Its only native lib
+  (`libandroidx.graphics.path.so`, 4 ABIs) is 16 KB-aligned.
+
+---
+
 ## 2026-10-26 — Partners plugin 1.1.0: partnership periods
 
 - Each partner has a **start / end date** or **Χωρίς λήξη** (no end date). Statuses are
