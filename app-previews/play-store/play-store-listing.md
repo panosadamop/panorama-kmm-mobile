@@ -1,10 +1,22 @@
-# Google Play listing — Πανόραμα Πολιχνίτου
+# Google Play listing — Πανόραμα Πολιχνίτου 1.1.0
 
-Everything to paste into **Play Console → Main store listing** and the
-**Dashboard → Set up your app** questionnaires for the 1.0.0 release.
-Character limits are Google's; the counts in brackets are the actual lengths.
+Everything to paste into Play Console for the **1.1.0** release (versionCode 2):
+the **Main store listing**, the **App content** declarations and the release.
+Character limits are Google's. The counts in brackets are the actual lengths.
 
 Default language: **Ελληνικά (Greek – Greece, el-GR)**.
+
+Lines marked **[push]** apply only if the build includes
+`composeApp/google-services.json` (Firebase). Without it the app has no push
+notifications on Android, so leave those lines out.
+
+**What changed since 1.0.0:**
+- contributor area (photos, voice recordings, text, live streaming to YouTube);
+- camera and microphone permissions;
+- push notifications **[push]**;
+- new upload key.
+
+The 1.0.0 answers "no data collected" and "no login" are **no longer true**.
 
 ---
 
@@ -13,14 +25,14 @@ Default language: **Ελληνικά (Greek – Greece, el-GR)**.
 | Field | Value |
 |---|---|
 | App name (max 30) | `Πανόραμα Πολιχνίτου` (19) |
-| Package name | `gr.panoramapolihnitou.app` |
+| Package name | `gr.panoramapolihnitou.app` (the test APK is `…app.debug`; never use it in Play) |
 | App or game | App |
 | Category | **Νέα και περιοδικά** (News & Magazines) |
-| Tags | ειδήσεις, τοπικές ειδήσεις, Λέσβος |
-| Free or paid | Free (no in-app purchases, no ads in 1.0.0) |
+| Free or paid | Free (no in-app purchases, no ads) |
 | Contact email | info@panoramapolihnitou.gr |
 | Website | https://panoramapolihnitou.gr |
-| Phone | *(optional — leave blank unless you want it public)* |
+| Phone | *(optional; leave blank unless you want it public)* |
+| Privacy policy | `https://panoramapolihnitou.gr/privacy-policy-app/`. **Must be live first** (see `app-previews/privacy-policy/PUBLISHING.md`) |
 
 ---
 
@@ -33,8 +45,10 @@ Default language: **Ελληνικά (Greek – Greece, el-GR)**.
 
 ## Full description (max 4000 chars)
 
+Remove the line `• Ειδοποιήσεις για νέα άρθρα` if the build has no push **[push]**.
+
 ```
-Το Πανόραμα Πολιχνίτου φέρνει την επικαιρότητα του Πολιχνίτου και της Δυτικής Λέσβου στο κινητό σας — απευθείας από το panoramapolihnitou.gr.
+Το Πανόραμα Πολιχνίτου φέρνει την επικαιρότητα του Πολιχνίτου και της Δυτικής Λέσβου στο κινητό σας, απευθείας από το panoramapolihnitou.gr.
 
 ΤΙ ΘΑ ΒΡΕΙΤΕ ΣΤΗΝ ΕΦΑΡΜΟΓΗ
 
@@ -42,32 +56,36 @@ Default language: **Ελληνικά (Greek – Greece, el-GR)**.
 • Προτεινόμενα άρθρα σε ένα εναλλασσόμενο πάνελ στην αρχική οθόνη
 • Πλοήγηση ανά κατηγορία: Πολιχνίτος, Επικαιρότητα, Λέσβος, Ελλάδα/Κόσμος, Αθλητισμός, Εκδηλώσεις, Αυτοδιοίκηση και άλλες
 • Αναζήτηση άρθρων με λέξη-κλειδί
-• Πλήρες άρθρο με εικόνες, τίτλους και συνδέσμους, όπως στην ιστοσελίδα
-• Αποθήκευση άρθρων για να τα διαβάσετε αργότερα, αποθηκευμένα στη συσκευή σας
-• Κοινοποίηση άρθρων σε φίλους μέσω των εφαρμογών του κινητού σας
-• Ρύθμιση μεγέθους γραμματοσειράς για πιο άνετη ανάγνωση
-• Σκούρο θέμα (dark mode) που ακολουθεί τις ρυθμίσεις της συσκευής σας
-• Στοιχεία επικοινωνίας και «Ποιοι Είμαστε» για το Πανόραμα Πολιχνίτου
+• Αποθήκευση άρθρων για να τα διαβάσετε αργότερα
+• Ειδοποιήσεις για νέα άρθρα
+• Κοινοποίηση άρθρων σε φίλους
+• Ρύθμιση μεγέθους γραμματοσειράς και σκούρο θέμα
 
-ΧΩΡΙΣ ΛΟΓΑΡΙΑΣΜΟ, ΧΩΡΙΣ ΔΙΑΦΗΜΙΣΕΙΣ
+ΓΙΑ ΤΟΥΣ ΣΥΝΕΡΓΑΤΕΣ ΜΑΣ
 
-Η εφαρμογή διαβάζει μόνο δημόσιο περιεχόμενο από το panoramapolihnitou.gr. Δεν
-απαιτείται λογαριασμός ή σύνδεση, δεν συλλέγονται προσωπικά δεδομένα και δεν
-προβάλλονται διαφημίσεις. Τα αποθηκευμένα άρθρα και οι ρυθμίσεις σας παραμένουν
-αποκλειστικά στη συσκευή σας.
+Οι ανταποκριτές και συνεργάτες του Πανοράματος, με κωδικό από τη σύνταξη, στέλνουν φωτογραφίες, ηχογραφήσεις και κείμενα απευθείας στη σύνταξη και μεταδίδουν ζωντανά στο κανάλι μας στο YouTube.
+
+ΧΩΡΙΣ ΔΙΑΦΗΜΙΣΕΙΣ
+
+Για την ανάγνωση δεν χρειάζεται λογαριασμός και δεν προβάλλονται διαφημίσεις. Τα αποθηκευμένα άρθρα και οι ρυθμίσεις σας μένουν μόνο στη συσκευή σας.
 
 Ακολουθήστε μας και στο Facebook: facebook.com/panoramapolihnitou
 ```
-(≈1.250 characters — well inside the limit)
 
-## Release notes — 1.0.0 (max 500 chars per language)
+Every claim was checked against the 1.1.0 build: dark theme and font size
+exist, and there's no ads SDK or advertising ID.
+
+## Release notes — 1.1.0 (max 500 chars per language)
+
+Remove the notifications line if the build has no push **[push]**.
 
 ```
-Η πρώτη έκδοση της εφαρμογής Πανόραμα Πολιχνίτου:
-• Τελευταία άρθρα και προτεινόμενες ειδήσεις στην αρχική
-• Πλοήγηση ανά κατηγορία και αναζήτηση
-• Αποθήκευση άρθρων για ανάγνωση αργότερα
-• Κοινοποίηση, ρύθμιση γραμματοσειράς, σκούρο θέμα
+<el-GR>
+• Περιοχή συνεργατών: αποστολή φωτογραφιών, ηχογραφήσεων και κειμένων στη σύνταξη
+• Ζωντανή μετάδοση στο YouTube για συνεργάτες
+• Ειδοποιήσεις για νέα άρθρα
+• Βελτιώσεις στην αρχική οθόνη
+</el-GR>
 ```
 
 ---
@@ -82,9 +100,10 @@ Default language: **Ελληνικά (Greek – Greece, el-GR)**.
 | Tablet screenshots | optional (only if you list tablet support) | — |
 | Promo video | optional | — |
 
-Phone screenshots (1280×2600, captured from the signed release build on a
-Pixel 10 Pro emulator running Android 17; system bars cropped so no device
-frame shows):
+Phone screenshots (1280×2600, captured from a signed release build on a Pixel
+10 Pro emulator running Android 17; system bars cropped so no device frame
+shows). They predate 1.1.0 but show screens that haven't changed. A shot of the
+contributor area is optional.
 
 | # | File | Screen |
 |---|---|---|
@@ -95,64 +114,114 @@ frame shows):
 | 5 | `05-saved.png` | Αποθηκευμένα άρθρα |
 
 > The iOS screenshots under `app-previews/screenshots/` are **not** for this
-> listing — they show iOS UI and Apple device sizes.
+> listing: they show iOS UI and Apple device sizes.
 
 ---
 
-## Questionnaires (Dashboard → Set up your app)
+## App content declarations (Policy and programs → App content)
 
-**App access** — All functionality is available without restrictions. No login,
-no special access instructions needed.
+**Privacy policy:** `https://panoramapolihnitou.gr/privacy-policy-app/`
 
-**Ads** — *No*, the app contains no ads. (The Google Mobile Ads SDK is not
-linked in 1.0.0. If you enable AdMob later you must change this answer, update
-Data safety, and re-declare the advertising ID.)
+**App access:** **All or some functionality in my app is restricted** → Add instructions:
 
-**Content rating** — Answer the IARC questionnaire honestly:
-- Category: **News / Information**
-- No violence, sexuality, profanity, gambling, or drug references in the app itself
-- The app displays editorial news content published by Πανόραμα Πολιχνίτου
-- No user-generated content, no chat, no unrestricted web browsing (links open
-  in the phone's browser)
-- Expected outcome: **PEGI 3 / Everyone**, possibly 12+ if you declare that news
-  content may reference real-world events
+| Field | Value |
+|---|---|
+| Name | `Contributor area` |
+| Username | *(leave empty)* |
+| Password | the password of the **App Review** partner (WordPress → Συνεργάτες; both roles, no end date) |
+| Any other information | `Open the menu (☰) → Συνεργάτες → enter the password. It unlocks photo/audio/text submission to the newsroom and live streaming to YouTube. All other features need no login.` |
 
-**Target audience and content** — Target age group **18 and over** (a general
-news app is not directed at children). Answer "No" to "appeals to children".
+Delete the App Review partner in WordPress after approval. Create a new one for
+each later review.
 
-**Data safety** — For 1.0.0 the honest answers are:
-- Does your app collect or share any of the required user data types? **No**
-- Is all user data encrypted in transit? **Yes** (all requests are HTTPS)
-- Do you provide a way for users to request data deletion? Not applicable — no
-  data is collected. Saved articles and settings live only on the device and are
-  removed when the app is uninstalled.
-- Data collected: **none**. Data shared: **none**.
+**Ads:** *No, my app does not contain ads.*
 
-**Government apps** — No. **Financial features** — None.
-**Health** — Not a health app.
+**Content rating (IARC):**
+- **Category:** *Reference, News, or Educational*.
+- **No** to: violence, sexuality, language, controlled substances, gambling and crude humour.
+- *Users interact or exchange content?* **No.** Partner submissions go privately to the newsroom, and nothing user-made is shown in the app.
+- *Shares location?* **No.** *Digital purchases?* **No.**
+- Expected: **PEGI 3 / Everyone**.
 
-**News apps declaration** — Play asks news apps to identify the publisher.
-Publisher: *Πανόραμα Πολιχνίτου*, https://panoramapolihnitou.gr,
-info@panoramapolihnitou.gr. The app's own «Ποιοι Είμαστε» and «Επικοινωνία»
-screens carry the same information.
+**Target audience and content:** **18 and over** only. *Unintentionally appeals to children?* **No.**
 
-**Privacy policy URL** — **Required before you can publish.** Publish the draft
-in `privacy-policy-el.md` on the website (e.g.
-`https://panoramapolihnitou.gr/privacy-policy-app/`) and paste that URL into
-Play Console → Store settings → Privacy policy.
+**News apps:** *Is your app a news app?* **Yes**. Publisher *Πανόραμα Πολιχνίτου*,
+https://panoramapolihnitou.gr, info@panoramapolihnitou.gr. The app's
+«Ποιοι Είμαστε» and «Επικοινωνία» screens carry the same information.
+
+**Advertising ID:** **No.** Verified: the merged manifest has no `AD_ID` permission.
+
+**Government apps:** No. **Financial features:** none. **Health:** none.
+
+### Data safety
+
+| Question | Answer |
+|---|---|
+| Collects or shares required user data types? | **Yes** |
+| All data encrypted in transit? | **Yes** (HTTPS only) |
+| Account creation | **My app does not allow users to create an account** (partner codes are issued by the newsroom) |
+| Data deletion | By email to **info@panoramapolihnitou.gr** |
+
+Data types to tick:
+
+| Data type | Collected | Shared | Ephemeral | Required/optional | Purpose |
+|---|---|---|---|---|---|
+| Photos and videos → **Photos** | Yes | No | No | Optional (users choose) | App functionality |
+| Audio → **Voice or sound recordings** | Yes | No | No | Optional | App functionality |
+| App activity → **Other user-generated content** (partners' text) | Yes | No | No | Optional | App functionality |
+| Device or other IDs **[push]** (Firebase installation ID) | Yes | No | No | Required | App functionality |
+
+"Shared: No" is deliberate. Partners send their material to the newsroom's own
+server, and a live broadcast to YouTube is a transfer the partner starts
+themselves, which Play doesn't count as sharing. Reading articles collects nothing.
+
+---
+
+## Permissions in the build (for reference)
+
+`INTERNET`, `ACCESS_NETWORK_STATE`, `POST_NOTIFICATIONS`, `CAMERA`,
+`RECORD_AUDIO`, plus `WAKE_LOCK` and `c2dm.RECEIVE` from Firebase Messaging.
+Camera and microphone are requested only when a partner uses them, and are
+declared `required="false"`, so devices without them still see the app. No
+storage or media-read permission: photos come through the system Photo Picker.
+None of these needs a special Play declaration form.
 
 ---
 
 ## Countries and pricing
 
-Free app. Suggested availability: **Ελλάδα** plus worldwide (the audience is
-mostly the Greek diaspora, so worldwide is usually the better choice).
+Free. Suggested availability: **all countries**, or at least Greece, Cyprus,
+Germany, the UK, the US and Australia for the diaspora.
 
 ---
 
-## Play App Signing
+## Release
 
-Keep **Play App Signing** enabled (the default). You upload with the upload key
-in `release-keystore.jks`; Google holds the app signing key. Back up
-`release-keystore.jks` and the password from `keystore.properties` offline —
-without them you cannot upload future updates with the same upload key.
+| Item | Value |
+|---|---|
+| Bundle | `dist/panorama-1.1.0-release.aab` (versionCode **2**, versionName **1.1.0**, target API 36, 16 KB-aligned) |
+| First track | **Internal testing** → verify on a phone → (closed test, see below) → Production |
+| Release name | `2 (1.1.0)` (Play's default) |
+
+**Closed-testing requirement.** Personal developer accounts created after
+13 Nov 2023 must run a closed test with **at least 12 testers opted in for 14
+consecutive days** before Production access. Organization accounts are exempt.
+
+---
+
+## Play App Signing and the upload key
+
+Keep **Play App Signing** on. Google holds the app signing key, and we upload with
+the upload key **`upload-keystore-2026-10.jks`** (alias `panorama`, valid to 2054,
+SHA-256 `8A:AA:A0:05:BC:A6:51:FC:97:38:65:0F:68:2F:D0:2E:A0:B2:9D:58:81:7E:9F:7A:DC:21:19:69:4C:19:32:4D`).
+Its password is only in `keystore.properties`. Both files are gitignored. **Back
+them up offline.**
+
+- **New app in Play:** the first upload registers this key automatically.
+- **App already uploaded with the July key** (`release-keystore.jks`, now lost):
+  App integrity → App signing → **Request upload key reset** → *I lost my upload
+  key* → upload `dist/upload_certificate.pem`. Wait for Google's confirmation
+  (1–2 days), then upload.
+- **Don't delete and recreate the app.** Package names are reserved forever,
+  even after deletion, so `gr.panoramapolihnitou.app` could never be used again.
+- Every later upload needs a **higher versionCode** (`composeApp/build.gradle.kts`).
